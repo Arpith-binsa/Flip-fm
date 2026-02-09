@@ -4,7 +4,7 @@ import AlbumGrid from "./components/AlbumGrid";
 function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [isFocused, setIsFocused] = useState(false); // <--- NEW STATE FOR ANIMATION
+  const [isFocused, setIsFocused] = useState(false);
 
   // Initial State: 4 Empty Slots
   const [selectedAlbums, setSelectedAlbums] = useState([
@@ -14,21 +14,33 @@ function App() {
     { id: 4, cover: "", title: "Select Album", artist: "..." }
   ]);
 
-  // --- THE LIVE SEARCH ENGINE ---
+  // --- THE UNRESTRICTED SEARCH ENGINE ---
+  // --- THE RELIABLE SEARCH ENGINE ---
   useEffect(() => {
+    // Clear results immediately if search is empty
+    if (searchTerm.length === 0) {
+      setSearchResults([]);
+      return;
+    }
+
     const delaySearch = setTimeout(async () => {
-      if (searchTerm.length > 2) {
-         try {
-           const response = await fetch(`https://itunes.apple.com/search?term=${searchTerm}&entity=album&limit=5`);
-           const data = await response.json();
-           setSearchResults(data.results);
-         } catch (error) {
-           console.error("Error fetching data:", error);
-         }
-      } else {
-        setSearchResults([]);
+      try {
+        const safeSearch = encodeURIComponent(searchTerm);
+        
+        // 1. entity=album: Ask strictly for albums (fixes the empty list bug)
+        // 2. country=US: The most complete catalog
+        // 3. explicit=Yes: Necessary for modern albums
+        const url = `https://itunes.apple.com/search?term=${safeSearch}&entity=album&limit=25&country=US&explicit=Yes`;
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        setSearchResults(data.results);
+        
+      } catch (error) {
+        console.error("Error fetching data:", error);
       }
-    }, 500);
+    }, 200); // 200ms delay is the sweet spot between "Instant" and "Glitchy"
 
     return () => clearTimeout(delaySearch);
   }, [searchTerm]);
@@ -55,7 +67,7 @@ function App() {
     setSelectedAlbums(newSelection);
     setSearchResults([]); 
     setSearchTerm("");
-    setIsFocused(false); // <--- Reset position after selection
+    setIsFocused(false);
   };
 
   return (
@@ -65,15 +77,12 @@ function App() {
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"></div>
       
-      {/* THE MAIN CONTAINER 
-         - Logic: If focused, move up (-translate-y-24). If not, stay centered.
-         - transition-all makes it slide smoothly.
-      */}
+      {/* THE MAIN CONTAINER */}
       <div className={`z-10 w-full max-w-md flex flex-col items-center gap-6 transition-transform duration-500 ease-in-out ${isFocused ? "-translate-y-24" : "translate-y-0"}`}>
         
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold tracking-tighter">flip-fm</h1>
-          <p className="text-gray-500 text-sm">Curate your sonic identity.</p>
+          <h1 className="text-4xl font-bold tracking-tighter">Flip-FM</h1>
+          <p className="text-gray-500 text-sm">CURATE YOUR VIBE. CONNECT THROUGH SOUND.</p>
         </div>
 
         {/* THE GRID */}
@@ -83,13 +92,12 @@ function App() {
         <div className="relative w-full">
           <input 
             type="text" 
-            placeholder="Search for an album..." 
+            placeholder="Search for an artist or an album..." 
             className="w-full bg-white/10 border border-white/10 backdrop-blur-md rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-center"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            // --- NEW HANDLERS ---
-            onFocus={() => setIsFocused(true)} // Slide UP when clicked
-            onBlur={() => setTimeout(() => setIsFocused(false), 200)} // Slide DOWN (with delay) when leaving
+            onFocus={() => setIsFocused(true)} 
+            onBlur={() => setTimeout(() => setIsFocused(false), 200)}
           />
 
           {/* DROPDOWN RESULTS */}
