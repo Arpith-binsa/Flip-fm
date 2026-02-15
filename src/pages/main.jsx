@@ -4,7 +4,6 @@ import App from './App.jsx'
 import './index.css'  // <--- This is the magic line that loads Tailwind
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+
     <App />
-  </React.StrictMode>,
 )
