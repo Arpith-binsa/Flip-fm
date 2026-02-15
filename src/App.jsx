@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
+import { supabase } from "./supabaseClient"; // Connected!
 import AlbumGrid from "./components/AlbumGrid";
 
 function App() {
+  // 1. Test the connection immediately
+  console.log("Supabase Connected:", supabase);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isFocused, setIsFocused] = useState(false);
@@ -14,10 +18,8 @@ function App() {
     { id: 4, cover: "", title: "Select Album", artist: "..." }
   ]);
 
-  // --- THE UNRESTRICTED SEARCH ENGINE ---
   // --- THE RELIABLE SEARCH ENGINE ---
   useEffect(() => {
-    // Clear results immediately if search is empty
     if (searchTerm.length === 0) {
       setSearchResults([]);
       return;
@@ -26,21 +28,17 @@ function App() {
     const delaySearch = setTimeout(async () => {
       try {
         const safeSearch = encodeURIComponent(searchTerm);
-        
-        // 1. entity=album: Ask strictly for albums (fixes the empty list bug)
-        // 2. country=US: The most complete catalog
-        // 3. explicit=Yes: Necessary for modern albums
+        // Search for albums in US store (Explicit allowed)
         const url = `https://itunes.apple.com/search?term=${safeSearch}&entity=album&limit=25&country=US&explicit=Yes`;
         
         const response = await fetch(url);
         const data = await response.json();
-        
         setSearchResults(data.results);
         
       } catch (error) {
         console.error("Error fetching data:", error);
       }
-    }, 200); // 200ms delay is the sweet spot between "Instant" and "Glitchy"
+    }, 200);
 
     return () => clearTimeout(delaySearch);
   }, [searchTerm]);
