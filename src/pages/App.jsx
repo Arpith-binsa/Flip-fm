@@ -2,10 +2,12 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 
+// --- CORRECTED IMPORTS ---
 import Landing from "./Landing";
 import Dashboard from "./Dashboard";
 import Onboarding from "./Onboarding"; 
-import Login from "../components/Login"; 
+import Login from "../components/Login"; // Keep this if Login is in a components folder
+import SignUp from "./SignUp";           // Changed this to match your structure
 import PublicProfile from "./PublicProfile";
 import Explore from "./Explore";
 import Tutorial from "./Tutorial";
@@ -24,7 +26,6 @@ export default function App() {
           .eq('id', currentSession.user.id)
           .maybeSingle();
         
-        // If they have a username, we consider the profile "complete"
         setHasProfile(!!data?.username);
       } else {
         setHasProfile(false);
@@ -32,13 +33,11 @@ export default function App() {
       setLoading(false);
     };
 
-    // 1. Initial Check on load
     supabase.auth.getSession().then(({ data: { session: activeSession } }) => {
       setSession(activeSession);
       checkUser(activeSession);
     });
 
-    // 2. Listen for Auth changes (Login, Logout, Signup)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       checkUser(session);
@@ -47,35 +46,30 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Show a clean loading state while checking the database
-  if (loading) {
-    return (
-      <div className="bg-black min-h-screen text-white flex items-center justify-center font-black italic tracking-tighter text-2xl uppercase">
-        Flip-FM...
-      </div>
-    );
-  }
+  if (loading) return <div className="bg-black min-h-screen text-white flex items-center justify-center font-black italic tracking-tighter text-2xl uppercase">Flip-FM...</div>;
 
   return (
     <Router>
       <Routes>
-        {/* --- 1. THE FRONT DOOR (LANDING) --- */}
+        {/* LANDING */}
         <Route 
           path="/" 
           element={!session ? <Landing /> : <Navigate to={hasProfile ? "/dashboard" : "/onboarding"} replace />} 
         />
         
-        {/* --- 2. AUTHENTICATION --- */}
+        {/* LOGIN (For returning users) */}
         <Route 
           path="/login" 
           element={!session ? <Login /> : <Navigate to={hasProfile ? "/dashboard" : "/onboarding"} replace />} 
         />
+
+        {/* SIGNUP (For new users) - THIS WAS THE FIX */}
         <Route 
           path="/signup" 
-          element={!session ? <Login /> : <Navigate to={hasProfile ? "/dashboard" : "/onboarding"} replace />} 
+          element={!session ? <SignUp /> : <Navigate to={hasProfile ? "/dashboard" : "/onboarding"} replace />} 
         />
 
-        {/* --- 3. THE ONBOARDING FLOW --- */}
+        {/* ONBOARDING FLOW */}
         <Route 
           path="/onboarding" 
           element={session ? (!hasProfile ? <Onboarding /> : <Navigate to="/tutorial" replace />) : <Navigate to="/login" replace />} 
@@ -86,17 +80,14 @@ export default function App() {
           element={session ? (hasProfile ? <Tutorial /> : <Navigate to="/onboarding" replace />) : <Navigate to="/login" replace />} 
         />
 
-        {/* --- 4. THE MAIN APP (DASHBOARD) --- */}
+        {/* MAIN APP */}
         <Route 
           path="/dashboard" 
           element={session ? (hasProfile ? <Dashboard /> : <Navigate to="/onboarding" replace />) : <Navigate to="/login" replace />} 
         />
 
-        {/* --- 5. PUBLIC COMMUNITY ROUTES --- */}
         <Route path="/explore" element={<Explore />} />
         <Route path="/u/:username" element={<PublicProfile />} />
-
-        {/* --- 6. CATCH-ALL REDIRECT --- */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
