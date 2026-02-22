@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../services/supabaseClient";
 import { useNavigate } from "react-router-dom";
 
 export default function Onboarding() {
