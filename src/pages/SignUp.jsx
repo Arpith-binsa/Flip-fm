@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "../supabaseClient"; // double check your path!
+import { supabase } from "../services/supabaseClient"; // double check your path!
 import { Link, useNavigate } from "react-router-dom";
 
 export default function SignUp() {
