@@ -1,16 +1,27 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom"; // <-- ADDED Link here
 import { useState, useEffect } from "react";
 import { supabase } from "../services/supabaseClient";
 
-// --- CORRECTED IMPORTS ---
 import Landing from "./Landing";
 import Dashboard from "./Dashboard";
 import Onboarding from "./Onboarding"; 
-import Login from "../components/Login"; // Keep this if Login is in a components folder
-import SignUp from "./SignUp";           // Changed this to match your structure
+import Login from "../components/Login"; 
+import SignUp from "./SignUp";           
 import PublicProfile from "./PublicProfile";
 import Explore from "./Explore";
 import Tutorial from "./Tutorial";
+
+// --- NEW FLOATING NAVBAR ---
+const Navbar = () => (
+  <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#111]/80 backdrop-blur-2xl border border-white/10 px-8 py-4 rounded-full flex gap-12 z-[100] shadow-2xl">
+    <Link to="/dashboard" className="text-gray-400 hover:text-white hover:scale-105 transition-all font-black uppercase text-xs tracking-widest">
+      Crate
+    </Link>
+    <Link to="/explore" className="text-gray-400 hover:text-white hover:scale-105 transition-all font-black uppercase text-xs tracking-widest">
+      Explore
+    </Link>
+  </nav>
+);
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -51,45 +62,19 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        {/* LANDING */}
-        <Route 
-          path="/" 
-          element={!session ? <Landing /> : <Navigate to={hasProfile ? "/dashboard" : "/onboarding"} replace />} 
-        />
-        
-        {/* LOGIN (For returning users) */}
-        <Route 
-          path="/login" 
-          element={!session ? <Login /> : <Navigate to={hasProfile ? "/dashboard" : "/onboarding"} replace />} 
-        />
-
-        {/* SIGNUP (For new users) - THIS WAS THE FIX */}
-        <Route 
-          path="/signup" 
-          element={!session ? <SignUp /> : <Navigate to={hasProfile ? "/dashboard" : "/onboarding"} replace />} 
-        />
-
-        {/* ONBOARDING FLOW */}
-        <Route 
-          path="/onboarding" 
-          element={session ? (!hasProfile ? <Onboarding /> : <Navigate to="/tutorial" replace />) : <Navigate to="/login" replace />} 
-        />
-        
-        <Route 
-          path="/tutorial" 
-          element={session ? (hasProfile ? <Tutorial /> : <Navigate to="/onboarding" replace />) : <Navigate to="/login" replace />} 
-        />
-
-        {/* MAIN APP */}
-        <Route 
-          path="/dashboard" 
-          element={session ? (hasProfile ? <Dashboard /> : <Navigate to="/onboarding" replace />) : <Navigate to="/login" replace />} 
-        />
-
+        <Route path="/" element={!session ? <Landing /> : <Navigate to={hasProfile ? "/dashboard" : "/onboarding"} replace />} />
+        <Route path="/login" element={!session ? <Login /> : <Navigate to={hasProfile ? "/dashboard" : "/onboarding"} replace />} />
+        <Route path="/signup" element={!session ? <SignUp /> : <Navigate to={hasProfile ? "/dashboard" : "/onboarding"} replace />} />
+        <Route path="/onboarding" element={session ? (!hasProfile ? <Onboarding /> : <Navigate to="/tutorial" replace />) : <Navigate to="/login" replace />} />
+        <Route path="/tutorial" element={session ? (hasProfile ? <Tutorial /> : <Navigate to="/onboarding" replace />) : <Navigate to="/login" replace />} />
+        <Route path="/dashboard" element={session ? (hasProfile ? <Dashboard /> : <Navigate to="/onboarding" replace />) : <Navigate to="/login" replace />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/u/:username" element={<PublicProfile />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+
+      {/* THE NAVBAR SHOWS UP HERE (Only if logged in and profile is complete) */}
+      {session && hasProfile && <Navbar />}
     </Router>
   );
 }
