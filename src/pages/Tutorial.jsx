@@ -22,15 +22,24 @@ export default function Tutorial() {
 
   const completeTutorial = async () => {
     const { data: { session } } = await supabase.auth.getSession();
+    
     if (selectedAlbum && session) {
-      // Save their first "vibe" to Slot 0 automatically
+      
+      // 1. Grab the genres array from iTunes
+      // 2. Filter out the generic "Music" tag so it doesn't ruin the algorithm
+      // 3. Fallback to primaryGenreName just in case the array is missing
+      const rawGenres = selectedAlbum.genres || [selectedAlbum.primaryGenreName];
+      const cleanGenres = rawGenres.filter(genre => genre !== "Music" && genre !== "Music Videos");
+
+      // Save the vibe to Slot 0 automatically
       await supabase.from('vibes').insert({
         user_id: session.user.id,
         slot_number: 0,
         album_id: selectedAlbum.collectionId.toString(),
         album_title: selectedAlbum.collectionName,
         album_artist: selectedAlbum.artistName,
-        album_cover: selectedAlbum.artworkUrl100.replace("100x100", "600x600")
+        album_cover: selectedAlbum.artworkUrl100.replace("100x100", "600x600"),
+        album_genres: cleanGenres // <--- OUR NEW MULTI-GENRE BRAIN INPUT
       });
     }
     navigate("/dashboard");

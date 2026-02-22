@@ -1,223 +1,188 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
-import AlbumGrid from "../components/AlbumGrid";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState({ username: "COLLECTOR", bio: "" });
+  const [vibes, setVibes] = useState([null, null, null, null]);
+  const [activeSlot, setActiveSlot] = useState(null); // Which slot is being edited
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [isFocused, setIsFocused] = useState(false);
-  const [activeSlot, setActiveSlot] = useState(null);
-  const searchInputRef = useRef(null);
+  const [results, setResults] = useState([]);
+  const navigate = useNavigate();
 
-  // Initial State: 4 Empty Slots
-  const [selectedAlbums, setSelectedAlbums] = useState([
-    { id: 1, cover: "", title: "Select Album", artist: "..." },
-    { id: 2, cover: "", title: "Select Album", artist: "..." },
-    { id: 3, cover: "", title: "Select Album", artist: "..." },
-    { id: 4, cover: "", title: "Select Album", artist: "..." }
-  ]);
-
-  // --- 1. AUTH, PROFILE & DATA LOADING ---
+  // 1. Fetch Session and Load Crate
   useEffect(() => {
-    const initDashboard = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      if (session) {
-        fetchProfile(session.user.id);
-        fetchVibes(session.user.id);
+    const loadDashboard = async () => {
+      const { data: { session: activeSession } } = await supabase.auth.getSession();
+      if (!activeSession) {
+        navigate("/login");
+        return;
       }
-      setLoading(false);
+      setSession(activeSession);
+
+      // Fetch the user's saved albums
+      const { data, error } = await supabase
+        .from('vibes')
+        .select('*')
+        .eq('user_id', activeSession.user.id);
+
+      if (!error && data) {
+        const loadedVibes = [null, null, null, null];
+        data.forEach(vibe => {
+          if (vibe.slot_number >= 0 && vibe.slot_number <= 3) {
+            loadedVibes[vibe.slot_number] = vibe;
+          }
+        });
+        setVibes(loadedVibes);
+      }
     };
-
-    initDashboard();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (session) {
-        fetchProfile(session.user.id);
-        fetchVibes(session.user.id);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const fetchProfile = async (userId) => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('username, bio')
-      .eq('id', userId)
-      .maybeSingle();
-    if (data) setProfile(data);
-  };
-
-  const fetchVibes = async (userId) => {
-    const { data, error } = await supabase
-      .from('vibes')
-      .select('*')
-      .eq('user_id', userId);
-
-    if (data && data.length > 0) {
-      const newSelection = [...selectedAlbums];
-      data.forEach(vibe => {
-        if (vibe.slot_number >= 0 && vibe.slot_number < 4) {
-           newSelection[vibe.slot_number] = {
-             id: vibe.album_id,
-             cover: vibe.album_cover,
-             title: vibe.album_title,
-             artist: vibe.album_artist
-           };
-        }
-      });
-      setSelectedAlbums(newSelection);
-    }
-  };
-
-  // --- 2. SAVE LOGIC ---
-  const saveVibeToCloud = async (slotIndex, albumData) => {
-    if (!session) return;
     
-    // Delete existing for this slot to avoid duplicates
-    await supabase
-      .from('vibes')
-      .delete()
-      .match({ user_id: session.user.id, slot_number: slotIndex });
+    loadDashboard();
+  }, [navigate]);
 
-    // Insert new selection
-    const { error } = await supabase
-      .from('vibes')
-      .insert({
-        user_id: session.user.id,
-        slot_number: slotIndex,
-        album_id: albumData.id.toString(),
-        album_title: albumData.title,
-        album_artist: albumData.artist,
-        album_cover: albumData.cover
-      });
-
-    if (error) console.error("Error saving vibe:", error);
-  };
-
-  // --- 3. SEARCH ENGINE ---
+  // 2. iTunes Search Logic for the Modal
   useEffect(() => {
-    if (searchTerm.length === 0) {
-      setSearchResults([]);
+    if (searchTerm.length < 2) {
+      setResults([]);
       return;
     }
-    const delaySearch = setTimeout(async () => {
-      try {
-        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(searchTerm)}&entity=album&limit=25&country=US`;
-        const response = await fetch(url);
-        const data = await response.json();
-        setSearchResults(data.results);
-      } catch (error) { console.error(error); }
-    }, 200);
-    return () => clearTimeout(delaySearch);
+    const delay = setTimeout(async () => {
+      const resp = await fetch(`https://itunes.apple.com/search?term=${searchTerm}&entity=album&limit=5`);
+      const data = await resp.json();
+      setResults(data.results || []);
+    }, 300);
+    return () => clearTimeout(delay);
   }, [searchTerm]);
 
-  const selectAlbum = (album) => {
-    const newSelection = [...selectedAlbums];
-    const highResCover = album.artworkUrl100.replace("100x100", "600x600");
+  // 3. Save the Album (WITH THE NEW GENRE BRAIN)
+  const handleSelectAlbum = async (album) => {
+    if (activeSlot === null || !session) return;
 
-    const albumData = {
-      id: album.collectionId,
-      cover: highResCover, 
-      title: album.collectionName,
-      artist: album.artistName
+    // --- THE BRAIN LOGIC ---
+    const rawGenres = album.genres || [album.primaryGenreName];
+    const cleanGenres = rawGenres.filter(genre => genre !== "Music" && genre !== "Music Videos");
+
+    const newVibe = {
+      user_id: session.user.id,
+      slot_number: activeSlot,
+      album_id: album.collectionId.toString(),
+      album_title: album.collectionName,
+      album_artist: album.artistName,
+      album_cover: album.artworkUrl100.replace("100x100", "600x600"),
+      album_genres: cleanGenres // <--- SAVING THE MULTI-GENRE ARRAY
     };
 
-    let targetIndex = activeSlot;
-    if (targetIndex === null) {
-      const emptyIndex = newSelection.findIndex(a => a.artist === "...");
-      targetIndex = (emptyIndex !== -1) ? emptyIndex : 0;
+    // Update UI instantly
+    const newVibes = [...vibes];
+    newVibes[activeSlot] = newVibe;
+    setVibes(newVibes);
+
+    // Save to Database (Upsert handles overwriting an existing slot)
+    const { error } = await supabase
+      .from('vibes')
+      .upsert(newVibe, { onConflict: 'user_id, slot_number' });
+
+    if (error) {
+      console.error("Error saving vibe:", error.message);
+      alert("Failed to save album. Check your database setup.");
     }
 
-    newSelection[targetIndex] = albumData;
-    setSelectedAlbums(newSelection);
-    saveVibeToCloud(targetIndex, albumData);
-
-    // Reset UI
+    // Close the search modal
     setActiveSlot(null);
-    setSearchResults([]); 
     setSearchTerm("");
-    setIsFocused(false);
+    setResults([]);
   };
 
-  if (loading) return null;
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-8 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-black text-white p-6 font-sans relative">
       
-      {/* Logout button */}
-      <button 
-        onClick={() => supabase.auth.signOut()}
-        className="absolute top-6 right-6 z-50 text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-red-500 transition-colors"
-      >
-        Sign Out
-      </button>
-
-      {/* Decorative Blur Background */}
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none"></div>
-
-      <div className={`z-10 w-full max-w-xl flex flex-col items-center gap-10 transition-all duration-500 ${isFocused ? "-translate-y-20" : "translate-y-0"}`}>
-        
-        {/* Dynamic Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-6xl font-black tracking-tighter uppercase italic leading-none">
-            {profile.username}'S CRATE
-          </h1>
-          <p className="text-blue-500 font-mono text-xs tracking-[0.2em] uppercase">
-            {profile.bio || "CURATE YOUR VIBE. CONNECT THROUGH SOUND."}
-          </p>
+      {/* Header */}
+      <header className="flex justify-between items-center mb-12 max-w-4xl mx-auto">
+        <div>
+          <h1 className="text-4xl font-black italic tracking-tighter uppercase">Your Crate</h1>
+          <p className="text-gray-500 uppercase tracking-widest text-xs font-bold mt-1">Curate your top 4</p>
         </div>
+        <button 
+          onClick={handleLogout}
+          className="text-gray-400 hover:text-white uppercase tracking-widest text-xs font-bold border-b border-gray-800 hover:border-white pb-1 transition-all"
+        >
+          Sign Out
+        </button>
+      </header>
 
-        <AlbumGrid 
-          albums={selectedAlbums} 
-          onSlotClick={(index) => {
-            setActiveSlot(index);
-            setIsFocused(true);
-            searchInputRef.current.focus();
-          }} 
-          activeSlot={activeSlot}
-        />
+      {/* The 4-Album Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto relative z-10">
+        {[0, 1, 2, 3].map((slot) => {
+          const vibe = vibes[slot];
+          return (
+            <div 
+              key={slot}
+              onClick={() => setActiveSlot(slot)}
+              className="aspect-square bg-[#111] rounded-2xl border border-white/5 hover:border-blue-500 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden group relative"
+            >
+              {vibe ? (
+                <>
+                  <img src={vibe.album_cover} alt={vibe.album_title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="font-black uppercase tracking-tighter text-sm">Swap Album</span>
+                  </div>
+                </>
+              ) : (
+                <div className="text-gray-600 group-hover:text-blue-500 transition-colors flex flex-col items-center">
+                  <span className="text-4xl mb-2">+</span>
+                  <span className="text-[10px] uppercase tracking-widest font-bold">Empty Slot</span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
 
-        {/* Search Bar */}
-        <div className="relative w-full max-w-md">
-          <input 
-            ref={searchInputRef}
-            type="text" 
-            placeholder={activeSlot !== null ? `Selecting for Slot ${activeSlot + 1}...` : "Search for an album..."}
-            className={`w-full border backdrop-blur-md rounded-2xl px-6 py-4 text-white placeholder-gray-500 focus:outline-none transition-all text-center text-lg ${activeSlot !== null ? "bg-blue-500/20 border-blue-500 ring-2 ring-blue-500" : "bg-white/5 border-white/10 focus:border-blue-500"}`}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onFocus={() => setIsFocused(true)} 
-            onBlur={() => setTimeout(() => setIsFocused(false), 200)}
-          />
+      {/* Search Modal */}
+      {activeSlot !== null && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6">
+          <div className="w-full max-w-md animate-in slide-in-from-bottom-4 duration-300">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-black italic tracking-tighter uppercase">Search Album</h2>
+              <button 
+                onClick={() => { setActiveSlot(null); setSearchTerm(""); setResults([]); }}
+                className="text-gray-500 hover:text-white uppercase text-xs tracking-widest font-bold"
+              >
+                Cancel
+              </button>
+            </div>
 
-          {/* Results Dropdown */}
-          {searchResults.length > 0 && (
-            <div className="absolute bottom-full left-0 right-0 mb-4 bg-[#161616] rounded-2xl overflow-hidden shadow-2xl border border-white/10 z-50 max-h-80 overflow-y-auto animate-in slide-in-from-bottom-2">
-              {searchResults.map((album) => (
+            <input 
+              autoFocus
+              className="w-full bg-[#111] border border-white/10 rounded-2xl px-6 py-5 text-xl focus:outline-none focus:border-blue-500 transition-all"
+              placeholder="Search artist or album..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+
+            <div className="mt-4 bg-[#111] border border-white/10 rounded-2xl overflow-hidden shadow-2xl max-h-[60vh] overflow-y-auto">
+              {results.map(album => (
                 <div 
-                  key={album.collectionId} 
-                  onClick={() => selectAlbum(album)}
-                  className="flex items-center gap-4 p-4 hover:bg-blue-600/20 cursor-pointer transition group border-b border-white/5 last:border-0"
+                  key={album.collectionId}
+                  onClick={() => handleSelectAlbum(album)}
+                  className="flex items-center gap-4 p-4 hover:bg-blue-600/20 cursor-pointer border-b border-white/5 last:border-0 transition-colors"
                 >
-                  <img src={album.artworkUrl60} alt="" className="w-12 h-12 rounded shadow-lg group-hover:scale-105 transition-transform" />
-                  <div className="text-left">
-                    <p className="font-bold text-sm text-white truncate w-64">{album.collectionName}</p>
-                    <p className="text-xs text-gray-500 group-hover:text-blue-400 transition-colors uppercase tracking-wider">{album.artistName}</p>
+                  <img src={album.artworkUrl60} className="w-12 h-12 rounded shadow-md" alt="" />
+                  <div className="text-left flex-1 min-w-0">
+                    <p className="font-bold text-sm truncate">{album.collectionName}</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider truncate">{album.artistName}</p>
                   </div>
                 </div>
               ))}
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
