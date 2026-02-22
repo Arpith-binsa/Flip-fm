@@ -38,23 +38,32 @@ export default function Dashboard() {
           topGenres: getTopGenres(otherUser.vibes)
         }));
 
-      // 1. Top 4 for Sync
-      const sortedByHigh = [...scoredUsers].sort((a, b) => b.matchScore - a.matchScore);
-      const syncSection = sortedByHigh.slice(0, 4);
+      // --- THE 10% THRESHOLD LOGIC ---
+      
+      // 1. Sync Logic: >= 10% match, sorted high to low
+      const syncSection = scoredUsers
+        .filter(u => u.matchScore >= 10)
+        .sort((a, b) => b.matchScore - a.matchScore)
+        .slice(0, 4);
       setTopMatches(syncSection);
 
-      // 2. Filter & Bottom 4 for Flipside
-      const syncIds = new Set(syncSection.map(u => u.id));
-      const flipsidePool = scoredUsers.filter(u => !syncIds.has(u.id));
-      const sortedByLow = flipsidePool.sort((a, b) => a.matchScore - b.matchScore);
-      setFlipsideMatches(sortedByLow.slice(0, 4));
+      // 2. Flipside Logic: < 10% match, sorted low to high (0% first)
+      const flipsideSection = scoredUsers
+        .filter(u => u.matchScore < 10)
+        .sort((a, b) => a.matchScore - b.matchScore)
+        .slice(0, 4);
+      setFlipsideMatches(flipsideSection);
 
       setLoading(false);
     };
     loadFeed();
   }, []);
 
-  if (loading) return <div className="min-h-screen bg-black text-white flex items-center justify-center font-black italic uppercase tracking-widest">Tuning Frequencies...</div>;
+  if (loading) return (
+    <div className="min-h-screen bg-black text-white flex items-center justify-center font-black italic uppercase tracking-widest">
+      Tuning Frequencies...
+    </div>
+  );
 
   const UserCard = ({ user, type }) => {
     const badgeColor = type === "sync" 
@@ -69,7 +78,6 @@ export default function Dashboard() {
               {user.avatar_url ? <img src={user.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold uppercase">{user.username?.[0]}</div>}
             </div>
             
-            {/* UPDATED LABELING HERE */}
             <div className="flex flex-col gap-1">
               <div className={`px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest text-center ${badgeColor}`}>
                 {user.matchScore}% Sync
@@ -89,8 +97,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* 2x2 GRID WITH VERTICAL IMAGE FIX */}
-        <div className="grid grid-cols-2 gap-1.5 w-24 h-24 bg-black/40 p-1.5 rounded-2xl shrink-0 shadow-inner">
+        {/* 2x2 GRID WITH ASPECT RATIO FIX */}
+        <div className="grid grid-cols-2 gap-1.5 w-24 h-24 bg-black/40 p-1.5 rounded-2xl shrink-0">
           {[0, 1, 2, 3].map(slot => {
             const vibe = user.vibes?.find(v => v.slot_number === slot);
             return (
@@ -127,18 +135,32 @@ export default function Dashboard() {
       <section className="max-w-6xl mx-auto mb-20">
         <h1 className="text-5xl font-black italic uppercase tracking-tighter mb-2">Sync Your Sound</h1>
         <p className="text-zinc-500 uppercase text-xs font-bold tracking-[0.3em] mb-8">Matches that mirror your crate.</p>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {topMatches.map(user => <UserCard key={user.id} user={user} type="sync" />)}
-        </div>
+        
+        {topMatches.length > 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {topMatches.map(user => <UserCard key={user.id} user={user} type="sync" />)}
+          </div>
+        ) : (
+          <div className="bg-zinc-900/20 border border-white/5 border-dashed rounded-3xl p-12 text-center">
+            <p className="text-zinc-600 font-bold uppercase tracking-widest text-xs">No high-sync matches found yet.</p>
+          </div>
+        )}
       </section>
 
       {/* THE FLIPSIDE */}
       <section className="max-w-6xl mx-auto">
         <h1 className="text-5xl font-black italic uppercase tracking-tighter mb-2 text-orange-600">The Flipside</h1>
         <p className="text-zinc-500 uppercase text-xs font-bold tracking-[0.3em] mb-8">sonic opposites. draw a wildcard.</p>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {flipsideMatches.map(user => <UserCard key={user.id} user={user} type="flipside" />)}
-        </div>
+        
+        {flipsideMatches.length > 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {flipsideMatches.map(user => <UserCard key={user.id} user={user} type="flipside" />)}
+          </div>
+        ) : (
+          <div className="bg-zinc-900/20 border border-white/5 border-dashed rounded-3xl p-12 text-center">
+            <p className="text-zinc-600 font-bold uppercase tracking-widest text-xs">No distinct flipsides found yet.</p>
+          </div>
+        )}
       </section>
     </div>
   );
