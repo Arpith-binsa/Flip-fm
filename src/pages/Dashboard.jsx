@@ -38,14 +38,14 @@ export default function Dashboard() {
           topGenres: getTopGenres(otherUser.vibes)
         }));
 
-      // --- LOGIC: UNIQUE SECTIONS ---
+      // 1. Top 4 for Sync
       const sortedByHigh = [...scoredUsers].sort((a, b) => b.matchScore - a.matchScore);
       const syncSection = sortedByHigh.slice(0, 4);
       setTopMatches(syncSection);
 
+      // 2. Filter & Bottom 4 for Flipside
       const syncIds = new Set(syncSection.map(u => u.id));
       const flipsidePool = scoredUsers.filter(u => !syncIds.has(u.id));
-
       const sortedByLow = flipsidePool.sort((a, b) => a.matchScore - b.matchScore);
       setFlipsideMatches(sortedByLow.slice(0, 4));
 
@@ -57,39 +57,48 @@ export default function Dashboard() {
   if (loading) return <div className="min-h-screen bg-black text-white flex items-center justify-center font-black italic uppercase tracking-widest">Tuning Frequencies...</div>;
 
   const UserCard = ({ user, type }) => {
-    const displayScore = type === "sync" ? user.matchScore : (100 - user.matchScore);
-    const label = type === "sync" ? "Sync" : "The Flipside";
-    const badgeColor = type === "sync" ? "border-blue-500/30 bg-blue-500/10 text-blue-400" : "border-orange-500/30 bg-orange-500/10 text-orange-400";
+    const badgeColor = type === "sync" 
+      ? "border-blue-500/30 bg-blue-500/10 text-blue-400" 
+      : "border-orange-600/30 bg-orange-600/10 text-orange-500";
 
     return (
-      <Link to={`/u/${user.username}`} className="bg-[#121214] rounded-3xl p-5 flex justify-between items-center hover:bg-[#18181b] transition-all group border border-white/5">
+      <Link to={`/u/${user.username}`} className="bg-[#111113] rounded-3xl p-5 flex justify-between items-center hover:bg-[#161619] transition-all group border border-white/5">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-zinc-800 overflow-hidden border border-white/10">
+            <div className="w-12 h-12 rounded-full bg-zinc-800 overflow-hidden border border-white/10 shadow-2xl">
               {user.avatar_url ? <img src={user.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold uppercase">{user.username?.[0]}</div>}
             </div>
-            <div className={`px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest ${badgeColor}`}>
-              {displayScore}% {label}
+            
+            {/* UPDATED LABELING HERE */}
+            <div className="flex flex-col gap-1">
+              <div className={`px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest text-center ${badgeColor}`}>
+                {user.matchScore}% Sync
+              </div>
+              {type === "flipside" && user.matchScore === 0 && (
+                <span className="text-[8px] font-black text-orange-600/60 uppercase tracking-tighter text-center">Sonic Opposite</span>
+              )}
             </div>
           </div>
+          
           <h3 className="text-2xl font-black text-white tracking-tighter italic uppercase leading-none">@{user.username}</h3>
+          
           <div className="flex gap-2">
             {user.topGenres.map((genre, i) => (
-              <span key={i} className="text-zinc-500 text-[9px] font-black uppercase tracking-[0.2em]">{genre}</span>
+              <span key={i} className="text-zinc-600 text-[9px] font-black uppercase tracking-[0.2em]">{genre}</span>
             ))}
           </div>
         </div>
 
-        {/* --- THE FIXED 2x2 GRID --- */}
-        <div className="grid grid-cols-2 gap-1 w-24 h-24 bg-black/40 p-1 rounded-xl shrink-0">
+        {/* 2x2 GRID WITH VERTICAL IMAGE FIX */}
+        <div className="grid grid-cols-2 gap-1.5 w-24 h-24 bg-black/40 p-1.5 rounded-2xl shrink-0 shadow-inner">
           {[0, 1, 2, 3].map(slot => {
             const vibe = user.vibes?.find(v => v.slot_number === slot);
             return (
-              <div key={slot} className="aspect-square bg-zinc-900 rounded-md overflow-hidden border border-white/5">
+              <div key={slot} className="aspect-square bg-zinc-900 rounded-lg overflow-hidden border border-white/5">
                 {vibe && (
                   <img 
                     src={vibe.album_cover} 
-                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
+                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 ease-in-out" 
                     alt=""
                   />
                 )}
@@ -103,9 +112,10 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white p-8 pb-32">
+      {/* BRAND HEADER */}
       <div className="max-w-6xl mx-auto flex justify-between items-center mb-16">
-        <h2 className="text-xl font-black italic uppercase tracking-widest text-white/20">FLIP-FM</h2>
-        <Link to="/my-profile" className="flex items-center gap-3 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full transition-all border border-white/10">
+        <h2 className="text-xl font-black italic uppercase tracking-widest text-white/10">FLIP-FM</h2>
+        <Link to="/my-profile" className="flex items-center gap-3 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full transition-all border border-white/5">
           <span className="text-xs font-black uppercase tracking-widest">@{currentUser?.username}</span>
           <div className="w-8 h-8 rounded-full bg-zinc-800 overflow-hidden border border-white/20">
             {currentUser?.avatar_url ? <img src={currentUser.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-bold text-xs">{currentUser?.username?.[0]}</div>}
@@ -113,17 +123,19 @@ export default function Dashboard() {
         </Link>
       </div>
 
+      {/* SYNC YOUR SOUND */}
       <section className="max-w-6xl mx-auto mb-20">
         <h1 className="text-5xl font-black italic uppercase tracking-tighter mb-2">Sync Your Sound</h1>
-        <p className="text-zinc-500 uppercase text-xs font-bold tracking-[0.3em] mb-8">The matches that mirror your crate.</p>
+        <p className="text-zinc-500 uppercase text-xs font-bold tracking-[0.3em] mb-8">Matches that mirror your crate.</p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {topMatches.map(user => <UserCard key={user.id} user={user} type="sync" />)}
         </div>
       </section>
 
+      {/* THE FLIPSIDE */}
       <section className="max-w-6xl mx-auto">
-        <h1 className="text-5xl font-black italic uppercase tracking-tighter mb-2 text-orange-500">The Flipside</h1>
-        <p className="text-zinc-500 uppercase text-xs font-bold tracking-[0.3em] mb-8">Sonic opposites. Draw a wildcard.</p>
+        <h1 className="text-5xl font-black italic uppercase tracking-tighter mb-2 text-orange-600">The Flipside</h1>
+        <p className="text-zinc-500 uppercase text-xs font-bold tracking-[0.3em] mb-8">sonic opposites. draw a wildcard.</p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {flipsideMatches.map(user => <UserCard key={user.id} user={user} type="flipside" />)}
         </div>
