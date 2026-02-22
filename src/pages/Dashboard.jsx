@@ -3,7 +3,6 @@ import { supabase } from "../services/supabaseClient";
 import { calculateVibeMatch } from "../vibeMath";
 import { Link } from "react-router-dom";
 
-// Helper to extract top genres from a crate
 const getTopGenres = (vibes) => {
   if (!vibes || vibes.length === 0) return ["Unknown"];
   const allGenres = vibes.flatMap(v => v.album_genres || []);
@@ -25,16 +24,12 @@ export default function Dashboard() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // 1. Load Profile & Vibes
       const { data: myProfile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
       const { data: myVibes } = await supabase.from('vibes').select('*').eq('user_id', user.id);
-      
-      // 2. Load Everyone Else
       const { data: allProfiles } = await supabase.from('profiles').select(`id, username, avatar_url, vibes (*)`);
       
       setCurrentUser(myProfile);
 
-      // 3. Score everyone
       const scoredUsers = allProfiles
         .filter(p => p.id !== user.id)
         .map(otherUser => ({
@@ -43,55 +38,41 @@ export default function Dashboard() {
           topGenres: getTopGenres(otherUser.vibes)
         }));
 
-      // --- THE LOGIC FIX: PREVENT DUPLICATES ---
-      
-      // Sort for Sync (Highest to Lowest)
+      // --- LOGIC: UNIQUE SECTIONS ---
       const sortedByHigh = [...scoredUsers].sort((a, b) => b.matchScore - a.matchScore);
       const syncSection = sortedByHigh.slice(0, 4);
       setTopMatches(syncSection);
 
-      // Filter out Sync users from the Flipside pool
       const syncIds = new Set(syncSection.map(u => u.id));
       const flipsidePool = scoredUsers.filter(u => !syncIds.has(u.id));
 
-      // Sort remaining pool for Flipside (Lowest to Highest)
       const sortedByLow = flipsidePool.sort((a, b) => a.matchScore - b.matchScore);
       setFlipsideMatches(sortedByLow.slice(0, 4));
 
       setLoading(false);
     };
-
     loadFeed();
   }, []);
 
-  if (loading) return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center font-black italic uppercase tracking-widest">
-      Tuning Frequencies...
-    </div>
-  );
+  if (loading) return <div className="min-h-screen bg-black text-white flex items-center justify-center font-black italic uppercase tracking-widest">Tuning Frequencies...</div>;
 
-  // REUSABLE CARD COMPONENT
   const UserCard = ({ user, type }) => {
-    // Flip the score for the Flipside UI: 10% match becomes 90% Flipside
     const displayScore = type === "sync" ? user.matchScore : (100 - user.matchScore);
-    const label = type === "sync" ? "Sync" : "Flipside";
+    const label = type === "sync" ? "Sync" : "The Flipside";
     const badgeColor = type === "sync" ? "border-blue-500/30 bg-blue-500/10 text-blue-400" : "border-orange-500/30 bg-orange-500/10 text-orange-400";
 
     return (
       <Link to={`/u/${user.username}`} className="bg-[#121214] rounded-3xl p-5 flex justify-between items-center hover:bg-[#18181b] transition-all group border border-white/5">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-zinc-800 overflow-hidden border border-white/10 shadow-xl">
-              {user.avatar_url ? <img src={user.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold">{user.username?.[0]}</div>}
+            <div className="w-12 h-12 rounded-full bg-zinc-800 overflow-hidden border border-white/10">
+              {user.avatar_url ? <img src={user.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold uppercase">{user.username?.[0]}</div>}
             </div>
-            
             <div className={`px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest ${badgeColor}`}>
               {displayScore}% {label}
             </div>
           </div>
-
-          <h3 className="text-2xl font-black text-white tracking-tighter italic uppercase">@{user.username}</h3>
-          
+          <h3 className="text-2xl font-black text-white tracking-tighter italic uppercase leading-none">@{user.username}</h3>
           <div className="flex gap-2">
             {user.topGenres.map((genre, i) => (
               <span key={i} className="text-zinc-500 text-[9px] font-black uppercase tracking-[0.2em]">{genre}</span>
@@ -99,13 +80,19 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* 2x2 Crate Grid */}
-        <div className="grid grid-cols-2 gap-1 w-24 h-24 bg-black/40 p-1 rounded-xl shadow-inner">
+        {/* --- THE FIXED 2x2 GRID --- */}
+        <div className="grid grid-cols-2 gap-1 w-24 h-24 bg-black/40 p-1 rounded-xl shrink-0">
           {[0, 1, 2, 3].map(slot => {
             const vibe = user.vibes?.find(v => v.slot_number === slot);
             return (
-              <div key={slot} className="w-full h-full bg-zinc-900 rounded-md overflow-hidden border border-white/5">
-                {vibe && <img src={vibe.album_cover} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />}
+              <div key={slot} className="aspect-square bg-zinc-900 rounded-md overflow-hidden border border-white/5">
+                {vibe && (
+                  <img 
+                    src={vibe.album_cover} 
+                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
+                    alt=""
+                  />
+                )}
               </div>
             );
           })}
@@ -116,7 +103,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white p-8 pb-32">
-      {/* HEADER */}
       <div className="max-w-6xl mx-auto flex justify-between items-center mb-16">
         <h2 className="text-xl font-black italic uppercase tracking-widest text-white/20">FLIP-FM</h2>
         <Link to="/my-profile" className="flex items-center gap-3 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full transition-all border border-white/10">
@@ -127,24 +113,18 @@ export default function Dashboard() {
         </Link>
       </div>
 
-      {/* SYNC SECTION */}
       <section className="max-w-6xl mx-auto mb-20">
-        <div className="mb-8">
-          <h1 className="text-5xl font-black italic uppercase tracking-tighter mb-2">Sync Your Sound</h1>
-          <p className="text-zinc-500 uppercase text-xs font-bold tracking-[0.3em]">The matches that mirror your crate.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <h1 className="text-5xl font-black italic uppercase tracking-tighter mb-2">Sync Your Sound</h1>
+        <p className="text-zinc-500 uppercase text-xs font-bold tracking-[0.3em] mb-8">The matches that mirror your crate.</p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {topMatches.map(user => <UserCard key={user.id} user={user} type="sync" />)}
         </div>
       </section>
 
-      {/* THE FLIPSIDE SECTION */}
       <section className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-5xl font-black italic uppercase tracking-tighter mb-2 text-orange-500">The Flipside</h1>
-          <p className="text-zinc-500 uppercase text-xs font-bold tracking-[0.3em]">Sonic opposites. Draw a wildcard.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <h1 className="text-5xl font-black italic uppercase tracking-tighter mb-2 text-orange-500">The Flipside</h1>
+        <p className="text-zinc-500 uppercase text-xs font-bold tracking-[0.3em] mb-8">Sonic opposites. Draw a wildcard.</p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {flipsideMatches.map(user => <UserCard key={user.id} user={user} type="flipside" />)}
         </div>
       </section>
