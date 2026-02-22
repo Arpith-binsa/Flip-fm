@@ -4,7 +4,7 @@ import { musicService } from "../services/musicService";
 import { useNavigate } from "react-router-dom";
 
 export default function MyProfile() {
-  const [session, setSession] = useState(null);
+  const [user, setUser] = useState(null); // Changed state name to be more explicit
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
   const [activeSlot, setActiveSlot] = useState(null);
@@ -13,14 +13,15 @@ export default function MyProfile() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return navigate("/login");
-      setSession(user);
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) return navigate("/login");
+      
+      setUser(authUser); // Set the raw user object
 
       const { data } = await supabase
         .from("vibes")
         .select("*")
-        .eq("user_id", user.id);
+        .eq("user_id", authUser.id);
       setMyVibes(data || []);
     };
     checkAuth();
@@ -36,15 +37,19 @@ export default function MyProfile() {
   }, [searchTerm]);
 
   const handleSelectAlbum = async (album) => {
-    if (activeSlot === null || !session?.id) return;
+    // FIXED: Use optional chaining and explicit user.id check to stop the crash
+    if (activeSlot === null || !user?.id) {
+      console.error("User session not loaded yet or no slot selected.");
+      return;
+    }
 
     try {
       const genres = await musicService.getAlbumDetails(album.album_artist, album.album_title);
 
-      // --- THE CRITICAL DATABASE FIX ---
+      // FIXED: onConflict ensures you can overwrite existing slots
       const { error } = await supabase.from("vibes").upsert(
         {
-          user_id: session.id,
+          user_id: user.id, // Correct path based on our state
           slot_number: activeSlot,
           album_id: album.album_id,
           album_title: album.album_title,
@@ -52,15 +57,14 @@ export default function MyProfile() {
           album_cover: album.album_cover,
           album_genres: genres, 
         },
-        { onConflict: 'user_id, slot_number' } // This prevents the Unique Constraint crash
+        { onConflict: 'user_id, slot_number' }
       );
 
       if (!error) {
-        // UI Update logic
         const newVibe = { 
           ...album, 
           slot_number: activeSlot, 
-          user_id: session.id,
+          user_id: user.id,
           album_genres: genres 
         };
         
@@ -72,8 +76,6 @@ export default function MyProfile() {
         setActiveSlot(null);
         setSearchTerm("");
         setResults([]);
-      } else {
-        console.error("Supabase Error:", error.message);
       }
     } catch (err) {
       console.error("Selection failed:", err);
@@ -83,8 +85,19 @@ export default function MyProfile() {
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-black italic uppercase mb-2 tracking-tighter">Your Crate</h1>
-        <p className="text-gray-500 mb-12 font-medium">Define your era. Pick 4.</p>
+        <div className="flex justify-between items-center mb-12">
+           <div>
+             <h1 className="text-4xl font-black italic uppercase tracking-tighter">Your Crate</h1>
+             <p className="text-gray-500 font-medium">Pick the 4 albums that define you.</p>
+           </div>
+           {/* Navigation back to feed */}
+           <button 
+             onClick={() => navigate('/dashboard')}
+             className="text-xs font-bold uppercase tracking-widest px-6 py-3 border border-white/10 rounded-full hover:bg-white/5 transition-all"
+           >
+             Back to Feed
+           </button>
+        </div>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
           {[0, 1, 2, 3].map((slot) => {
@@ -100,8 +113,8 @@ export default function MyProfile() {
                 {vibe ? (
                   <>
                     <img src={vibe.album_cover} className="w-full h-full object-cover" alt={vibe.album_title} />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                       <span className="text-[10px] font-black uppercase tracking-widest">Change</span>
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                       <span className="text-[10px] font-black uppercase tracking-widest text-white">Change</span>
                     </div>
                   </>
                 ) : (
