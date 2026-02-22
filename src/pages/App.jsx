@@ -10,6 +10,7 @@ import SignUp from "./SignUp";
 import PublicProfile from "./PublicProfile";
 import Explore from "./Explore";
 import Tutorial from "./Tutorial";
+import MyProfile from "./MyProfile";
 
 // --- NEW FLOATING NAVBAR ---
 const Navbar = () => (
@@ -70,7 +71,7 @@ export default function App() {
         <Route path="/dashboard" element={session ? (hasProfile ? <Dashboard /> : <Navigate to="/onboarding" replace />) : <Navigate to="/login" replace />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/u/:username" element={<PublicProfile />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/my-profile" element={<MyProfile />} />
       </Routes>
 
       {/* THE NAVBAR SHOWS UP HERE (Only if logged in and profile is complete) */}
