@@ -1,23 +1,23 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "../supabaseClient";
-import { calculateVibeMatch } from "../vibeMath"; // <--- IMPORT THE BRAIN
+import { calculateVibeMatch } from "../vibeMath";
 
 export default function PublicProfile() {
   const { username } = useParams();
   const [profile, setProfile] = useState(null);
   const [theirVibes, setTheirVibes] = useState([]);
-  const [myVibes, setMyVibes] = useState([]); // <--- NEW STATE FOR YOUR VIBES
-  const [matchScore, setMatchScore] = useState(null); // <--- NEW STATE FOR SCORE
+  const [myVibes, setMyVibes] = useState([]); 
+  const [matchScore, setMatchScore] = useState(null); 
 
   useEffect(() => {
     const fetchData = async () => {
-      // 1. Get the Public Profile
-      const { data: profileData } = await supabase
+      // 1. Get the Public Profile (CHANGED TO .maybeSingle())
+      const { data: profileData, error } = await supabase
         .from('profiles')
         .select('id, username, bio')
         .eq('username', username)
-        .single();
+        .maybeSingle(); // <--- THIS FIXES THE 406 ERROR
 
       if (profileData) {
         setProfile(profileData);
@@ -46,12 +46,25 @@ export default function PublicProfile() {
             setMatchScore(score);
           }
         }
+      } else {
+        // If no user is found, set profile to a specific "not found" state
+        setProfile("NOT_FOUND");
       }
     };
     fetchData();
   }, [username]);
 
-  if (!profile) return <div className="text-white p-10">Loading Profile...</div>;
+  // NEW: Handle the "User Not Found" screen
+  if (profile === "NOT_FOUND") {
+    return (
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center space-y-4">
+        <h1 className="text-4xl font-black italic uppercase">404: Vibe Not Found</h1>
+        <p className="text-gray-500 uppercase tracking-widest text-xs">No user exists with the username "{username}"</p>
+      </div>
+    );
+  }
+
+  if (!profile) return <div className="min-h-screen bg-black text-white flex items-center justify-center uppercase font-black tracking-widest text-sm">Loading Profile...</div>;
 
   return (
     <div className="min-h-screen bg-black text-white p-6 flex flex-col items-center">
