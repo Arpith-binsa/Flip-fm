@@ -1,167 +1,106 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabase } from "../services/supabaseClient";
-import { calculateVibeMatch } from "../vibeMath";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-const getTopGenres = (vibes) => {
-  if (!vibes || vibes.length === 0) return ["Unknown"];
-  const allGenres = vibes.flatMap(v => v.album_genres || []);
-  const counts = allGenres.reduce((acc, g) => { 
-    acc[g] = (acc[g] || 0) + 1; 
-    return acc; 
-  }, {});
-  return Object.keys(counts).sort((a, b) => counts[b] - counts[a]).slice(0, 2);
-};
+export default function Onboarding() {
+  const [step, setStep] = useState(1);
+  const [username, setUsername] = useState("");
+  const [bio, setBio] = useState("");
+  const navigate = useNavigate();
 
-export default function Dashboard() {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [topMatches, setTopMatches] = useState([]);
-  const [flipsideMatches, setFlipsideMatches] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const handleFinish = async () => {
+    console.log("Finish button clicked. Attempting to save...");
+    
+    // 1. Get the current user ID
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      console.error("Auth Error:", userError);
+      alert("Session expired. Please log in again.");
+      return;
+    }
 
-  useEffect(() => {
-    const loadFeed = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+    // 2. Update the profile in Supabase
+    const { error } = await supabase
+      .from('profiles')
+      .update({ 
+        username: username, 
+        bio: bio, 
+        updated_at: new Date() 
+      })
+      .eq('id', user.id);
 
-      const { data: myProfile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-      const { data: myVibes } = await supabase.from('vibes').select('*').eq('user_id', user.id);
-      const { data: allProfiles } = await supabase.from('profiles').select(`id, username, avatar_url, vibes (*)`);
-      
-      setCurrentUser(myProfile);
-
-      const scoredUsers = allProfiles
-        .filter(p => p.id !== user.id)
-        .map(otherUser => ({
-          ...otherUser,
-          matchScore: calculateVibeMatch(myVibes || [], otherUser.vibes || []),
-          topGenres: getTopGenres(otherUser.vibes)
-        }));
-
-      // --- THE 10% THRESHOLD LOGIC ---
-      
-      // 1. Sync Logic: >= 10% match, sorted high to low
-      const syncSection = scoredUsers
-        .filter(u => u.matchScore >= 10)
-        .sort((a, b) => b.matchScore - a.matchScore)
-        .slice(0, 4);
-      setTopMatches(syncSection);
-
-      // 2. Flipside Logic: < 10% match, sorted low to high (0% first)
-      const flipsideSection = scoredUsers
-        .filter(u => u.matchScore < 10)
-        .sort((a, b) => a.matchScore - b.matchScore)
-        .slice(0, 4);
-      setFlipsideMatches(flipsideSection);
-
-      setLoading(false);
-    };
-    loadFeed();
-  }, []);
-
-  if (loading) return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center font-black italic uppercase tracking-widest">
-      Tuning Frequencies...
-    </div>
-  );
-
-  const UserCard = ({ user, type }) => {
-    const badgeColor = type === "sync" 
-      ? "border-blue-500/30 bg-blue-500/10 text-blue-400" 
-      : "border-orange-600/30 bg-orange-600/10 text-orange-500";
-
-    return (
-      <Link to={`/u/${user.username}`} className="bg-[#111113] rounded-3xl p-5 flex justify-between items-center hover:bg-[#161619] transition-all group border border-white/5">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-zinc-800 overflow-hidden border border-white/10 shadow-2xl">
-              {user.avatar_url ? <img src={user.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold uppercase">{user.username?.[0]}</div>}
-            </div>
-            
-            <div className="flex flex-col gap-1">
-              <div className={`px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest text-center ${badgeColor}`}>
-                {user.matchScore}% Sync
-              </div>
-              {type === "flipside" && user.matchScore === 0 && (
-                <span className="text-[8px] font-black text-orange-600/60 uppercase tracking-tighter text-center">Sonic Opposite</span>
-              )}
-            </div>
-          </div>
-          
-          <h3 className="text-2xl font-black text-white tracking-tighter italic uppercase leading-none">@{user.username}</h3>
-          
-          <div className="flex gap-2">
-            {user.topGenres.map((genre, i) => (
-              <span key={i} className="text-zinc-600 text-[9px] font-black uppercase tracking-[0.2em]">{genre}</span>
-            ))}
-          </div>
-        </div>
-
-        {/* 2x2 GRID WITH ASPECT RATIO FIX */}
-        <div className="grid grid-cols-2 gap-1.5 w-24 h-24 bg-black/40 p-1.5 rounded-2xl shrink-0">
-          {[0, 1, 2, 3].map(slot => {
-            const vibe = user.vibes?.find(v => v.slot_number === slot);
-            return (
-              <div key={slot} className="aspect-square bg-zinc-900 rounded-lg overflow-hidden border border-white/5">
-                {vibe && (
-                  <img 
-                    src={vibe.album_cover} 
-                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 ease-in-out" 
-                    alt=""
-                  />
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </Link>
-    );
+    if (!error) {
+       console.log("Profile updated successfully!");
+       // Send them to pick their 4 albums!
+       navigate("/tutorial");
+    } else {
+       console.error("Supabase Database Error:", error);
+       alert("Error saving profile: " + error.message);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-8 pb-32">
-      {/* BRAND HEADER */}
-      <div className="max-w-6xl mx-auto flex justify-between items-center mb-16">
-        <h2 className="text-xl font-black italic uppercase tracking-widest text-white/10">FLIP-FM</h2>
-        <Link to="/my-profile" className="flex items-center gap-3 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full transition-all border border-white/5">
-          <span className="text-xs font-black uppercase tracking-widest">@{currentUser?.username}</span>
-          <div className="w-8 h-8 rounded-full bg-zinc-800 overflow-hidden border border-white/20">
-            {currentUser?.avatar_url ? <img src={currentUser.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-bold text-xs">{currentUser?.username?.[0]}</div>}
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 font-sans relative z-50">
+      <div className="w-full max-w-md space-y-12">
+        
+        {/* Progress Dots */}
+        <div className="flex justify-center gap-3">
+          <div className={`h-1.5 w-12 rounded-full transition-all duration-500 ${step === 1 ? "bg-blue-500" : "bg-white/20"}`}></div>
+          <div className={`h-1.5 w-12 rounded-full transition-all duration-500 ${step === 2 ? "bg-blue-500" : "bg-white/20"}`}></div>
+        </div>
+
+        {step === 1 ? (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="space-y-2 text-center">
+              <h2 className="text-5xl font-black tracking-tighter">CLAIM YOUR HANDLE.</h2>
+              <p className="text-gray-500 uppercase tracking-widest text-xs font-bold">Step 01 — Identity</p>
+            </div>
+            <input 
+              type="text"
+              placeholder="username"
+              className="w-full bg-white/5 border-b-2 border-white/10 p-4 text-2xl text-center focus:border-blue-500 outline-none transition-colors"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.toLowerCase())}
+            />
+            <button 
+              onClick={() => {
+                console.log("Moving to Step 2");
+                setStep(2);
+              }}
+              disabled={username.length < 3}
+              className="w-full bg-white text-black font-black py-5 rounded-2xl hover:bg-blue-500 hover:text-white transition-all disabled:opacity-20 uppercase tracking-tighter text-lg pointer-events-auto"
+            >
+              Next Step
+            </button>
           </div>
-        </Link>
+        ) : (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+             <div className="space-y-2 text-center">
+              <h2 className="text-5xl font-black tracking-tighter">SET THE VIBE.</h2>
+              <p className="text-gray-500 uppercase tracking-widest text-xs font-bold">Step 02 — Bio</p>
+            </div>
+            <textarea 
+              placeholder="Tell the world about yourself and what you listen to."
+              className="w-center bg-white/5 border-2 border-white/10 p-6 rounded-3xl h-40 focus:border-blue-500 outline-none transition-colors text-lg"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+            />
+            <button 
+              onClick={handleFinish}
+              className="w-full bg-blue-600 text-white font-black py-5 rounded-2xl hover:bg-blue-500 transition-all uppercase tracking-tighter text-lg pointer-events-auto"
+            >
+              Create My Crate
+            </button>
+            <button 
+              onClick={() => setStep(1)}
+              className="w-full text-gray-500 font-bold uppercase text-xs tracking-widest hover:text-white transition-colors"
+            >
+              Go Back
+            </button>
+          </div>
+        )}
       </div>
-
-      {/* SYNC YOUR SOUND */}
-      <section className="max-w-6xl mx-auto mb-20">
-        <h1 className="text-5xl font-black italic uppercase tracking-tighter mb-2">Sync Your Sound</h1>
-        <p className="text-zinc-500 uppercase text-xs font-bold tracking-[0.3em] mb-8">Matches that mirror your crate.</p>
-        
-        {topMatches.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {topMatches.map(user => <UserCard key={user.id} user={user} type="sync" />)}
-          </div>
-        ) : (
-          <div className="bg-zinc-900/20 border border-white/5 border-dashed rounded-3xl p-12 text-center">
-            <p className="text-zinc-600 font-bold uppercase tracking-widest text-xs">No high-sync matches found yet.</p>
-          </div>
-        )}
-      </section>
-
-      {/* THE FLIPSIDE */}
-      <section className="max-w-6xl mx-auto">
-        <h1 className="text-5xl font-black italic uppercase tracking-tighter mb-2 text-orange-600">The Flipside</h1>
-        <p className="text-zinc-500 uppercase text-xs font-bold tracking-[0.3em] mb-8">sonic opposites. draw a wildcard.</p>
-        
-        {flipsideMatches.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {flipsideMatches.map(user => <UserCard key={user.id} user={user} type="flipside" />)}
-          </div>
-        ) : (
-          <div className="bg-zinc-900/20 border border-white/5 border-dashed rounded-3xl p-12 text-center">
-            <p className="text-zinc-600 font-bold uppercase tracking-widest text-xs">No distinct flipsides found yet.</p>
-          </div>
-        )}
-      </section>
     </div>
   );
 }
