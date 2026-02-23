@@ -81,7 +81,7 @@ export default function Onboarding() {
               <p className="text-gray-500 uppercase tracking-widest text-xs font-bold">Step 02 — Bio</p>
             </div>
             <textarea 
-              placeholder="What are you listening to?"
+              placeholder="Tell the world about yourself and what you listen to."
               className="w-center bg-white/5 border-2 border-white/10 p-6 rounded-3xl h-40 focus:border-blue-500 outline-none transition-colors text-lg"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
