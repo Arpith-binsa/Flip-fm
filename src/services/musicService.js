@@ -1,7 +1,15 @@
 // src/services/musicService.js
 
-const API_KEY = "49dd31fca41bd2d158b7d48673e6aea5"; //
+// src/services/musicService.js
+
+const API_KEY = import.meta.env.VITE_LASTFM_API_KEY;
 const BASE_URL = "https://ws.audioscrobbler.com/2.0/";
+
+// Validate API key on module load
+if (!API_KEY) {
+  console.error("CRITICAL: Last.fm API key is missing! Check your .env file.");
+}
+
 
 export const musicService = {
   // 1. Search for albums
