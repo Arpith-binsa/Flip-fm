@@ -1,105 +1,275 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
-import { useNavigate } from "react-router-dom";
+import { calculateVibeMatch } from "../vibeMath";
+import { Link, useNavigate } from "react-router-dom";
+import { User, Settings } from "lucide-react";
 
-export default function Onboarding() {
-  const [step, setStep] = useState(1);
-  const [username, setUsername] = useState("");
-  const [bio, setBio] = useState("");
+export default function Dashboard() {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [myVibes, setMyVibes] = useState([]);
+  const [syncMatches, setSyncMatches] = useState([]); // High compatibility (70%+)
+  const [flipsideMatches, setFlipsideMatches] = useState([]); // Low compatibility (0-30%)
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const handleFinish = async () => {
-    console.log("Finish button clicked. Attempting to save...");
-    
-    // 1. Get the current user ID
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
-    if (userError || !user) {
-      console.error("Auth Error:", userError);
-      alert("Session expired. Please log in again.");
-      return;
-    }
+  useEffect(() => {
+    const loadDashboard = async () => {
+      // 1. Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return navigate("/login");
 
-    // 2. Update the profile in Supabase
-    const { error } = await supabase
-      .from('profiles')
-      .update({ 
-        username: username, 
-        bio: bio, 
-        updated_at: new Date() 
-      })
-      .eq('id', user.id);
+      // 2. Get user's profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      setCurrentUser(profile);
 
-    if (!error) {
-       console.log("Profile updated successfully!");
-       // Send them to pick their 4 albums!
-       navigate("/tutorial");
-    } else {
-       console.error("Supabase Database Error:", error);
-       alert("Error saving profile: " + error.message);
-    }
-  };
+      // 3. Get user's vibes
+      const { data: myVibeData } = await supabase
+        .from('vibes')
+        .select('*')
+        .eq('user_id', user.id);
+      
+      setMyVibes(myVibeData || []);
+
+      // 4. Get all other users and their vibes
+      const { data: allProfiles } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          username,
+          bio,
+          avatar_url,
+          vibes (*)
+        `);
+
+      // 5. Calculate matches and categorize
+      const matches = allProfiles
+        .filter(p => p.id !== user.id && p.vibes?.length > 0) // Filter out self and users with no vibes
+        .map(otherUser => {
+          const score = calculateVibeMatch(myVibeData || [], otherUser.vibes || []);
+          return { ...otherUser, matchScore: score };
+        });
+
+      // Sort by score
+      const sorted = matches.sort((a, b) => b.matchScore - a.matchScore);
+
+      // Split into Sync (70%+) and Flipside (0-30%)
+      setSyncMatches(sorted.filter(m => m.matchScore >= 70).slice(0, 5));
+      setFlipsideMatches(sorted.filter(m => m.matchScore <= 30).slice(0, 5));
+      
+      setLoading(false);
+    };
+
+    loadDashboard();
+  }, [navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="text-6xl font-black italic uppercase tracking-tighter animate-pulse">
+            FLIP-FM
+          </div>
+          <div className="text-sm text-gray-500 uppercase tracking-widest">
+            Loading your crate...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 font-sans relative z-50">
-      <div className="w-full max-w-md space-y-12">
-        
-        {/* Progress Dots */}
-        <div className="flex justify-center gap-3">
-          <div className={`h-1.5 w-12 rounded-full transition-all duration-500 ${step === 1 ? "bg-blue-500" : "bg-white/20"}`}></div>
-          <div className={`h-1.5 w-12 rounded-full transition-all duration-500 ${step === 2 ? "bg-blue-500" : "bg-white/20"}`}></div>
+    <div className="min-h-screen bg-black text-white pb-32">
+      
+      {/* HEADER */}
+      <header className="border-b border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-6 py-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-4xl font-black italic uppercase tracking-tighter">
+              Your Crate
+            </h1>
+            <p className="text-gray-500 text-xs uppercase tracking-widest mt-1">
+              Welcome back, @{currentUser?.username}
+            </p>
+          </div>
+          <div className="flex gap-4">
+            <button 
+              onClick={() => navigate('/my-profile')}
+              className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all text-xs uppercase tracking-widest font-bold"
+            >
+              <Settings size={14} />
+              Edit Crate
+            </button>
+          </div>
         </div>
+      </header>
 
-        {step === 1 ? (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="space-y-2 text-center">
-              <h2 className="text-5xl font-black tracking-tighter">CLAIM YOUR HANDLE.</h2>
-              <p className="text-gray-500 uppercase tracking-widest text-xs font-bold">Step 01 — Identity</p>
-            </div>
-            <input 
-              type="text"
-              placeholder="username"
-              className="w-full bg-white/5 border-b-2 border-white/10 p-4 text-2xl text-center focus:border-blue-500 outline-none transition-colors"
-              value={username}
-              onChange={(e) => setUsername(e.target.value.toLowerCase())}
-            />
-            <button 
-              onClick={() => {
-                console.log("Moving to Step 2");
-                setStep(2);
-              }}
-              disabled={username.length < 3}
-              className="w-full bg-white text-black font-black py-5 rounded-2xl hover:bg-blue-500 hover:text-white transition-all disabled:opacity-20 uppercase tracking-tighter text-lg pointer-events-auto"
+      <div className="max-w-6xl mx-auto px-6 py-12">
+
+        {/* YOUR 4 ALBUMS PREVIEW */}
+        <section className="mb-16">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-black uppercase tracking-tighter">Your Identity</h2>
+            <Link 
+              to="/my-profile" 
+              className="text-xs text-blue-500 uppercase tracking-widest font-bold hover:text-blue-400"
             >
-              Next Step
-            </button>
+              Edit →
+            </Link>
           </div>
-        ) : (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-             <div className="space-y-2 text-center">
-              <h2 className="text-5xl font-black tracking-tighter">SET THE VIBE.</h2>
-              <p className="text-gray-500 uppercase tracking-widest text-xs font-bold">Step 02 — Bio</p>
-            </div>
-            <textarea 
-              placeholder="Tell the world about yourself and what you listen to."
-              className="w-center bg-white/5 border-2 border-white/10 p-6 rounded-3xl h-40 focus:border-blue-500 outline-none transition-colors text-lg"
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-            />
-            <button 
-              onClick={handleFinish}
-              className="w-full bg-blue-600 text-white font-black py-5 rounded-2xl hover:bg-blue-500 transition-all uppercase tracking-tighter text-lg pointer-events-auto"
-            >
-              Create My Crate
-            </button>
-            <button 
-              onClick={() => setStep(1)}
-              className="w-full text-gray-500 font-bold uppercase text-xs tracking-widest hover:text-white transition-colors"
-            >
-              Go Back
-            </button>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[0, 1, 2, 3].map((slot) => {
+              const vibe = myVibes.find(v => v.slot_number === slot);
+              return (
+                <div key={slot} className="aspect-square rounded-2xl overflow-hidden border border-white/10 bg-white/5 relative group">
+                  {vibe ? (
+                    <>
+                      <img src={vibe.album_cover} className="w-full h-full object-cover" alt={vibe.album_title} />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute bottom-0 left-0 right-0 p-3">
+                          <p className="text-xs font-bold truncate">{vibe.album_title}</p>
+                          <p className="text-[10px] text-gray-400 truncate">{vibe.album_artist}</p>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-4xl text-white/10 font-black">+</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-        )}
+        </section>
+
+        {/* SYNC MATCHES - High Compatibility */}
+        <section className="mb-16">
+          <div className="mb-6">
+            <div className="flex items-center gap-3 mb-2">
+              <h2 className="text-3xl font-black uppercase tracking-tighter">Sync Matches</h2>
+              <div className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full">
+                <span className="text-green-400 text-[10px] font-black uppercase tracking-widest">70%+ Match</span>
+              </div>
+            </div>
+            <p className="text-gray-500 text-sm">People who vibe exactly like you</p>
+          </div>
+
+          {syncMatches.length === 0 ? (
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
+              <p className="text-gray-500 uppercase tracking-widest text-xs">
+                No high matches yet. Check back later!
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {syncMatches.map(user => (
+                <Link 
+                  to={`/u/${user.username}`} 
+                  key={user.id}
+                  className="group flex items-center justify-between bg-[#0a0a0a] border border-white/5 p-6 rounded-2xl hover:bg-white/5 hover:border-green-500/30 transition-all"
+                >
+                  <div className="flex items-center gap-6">
+                    <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-500 rounded-2xl flex items-center justify-center text-2xl font-black uppercase overflow-hidden">
+                      {user.avatar_url ? (
+                        <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
+                      ) : (
+                        user.username?.[0]
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black tracking-tighter uppercase group-hover:text-green-400 transition-colors">
+                        @{user.username}
+                      </h3>
+                      <p className="text-sm text-gray-500 mt-1 line-clamp-1">{user.bio}</p>
+                      <div className="flex gap-1 mt-2">
+                        {user.vibes?.slice(0, 4).map((v, i) => (
+                          <div key={i} className="w-8 h-8 rounded-md overflow-hidden border border-white/10">
+                            <img src={v.album_cover} className="w-full h-full object-cover" alt="" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Match</div>
+                    <div className="text-4xl font-black text-green-400">
+                      {user.matchScore}%
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* FLIPSIDE MATCHES - Low Compatibility */}
+        <section>
+          <div className="mb-6">
+            <div className="flex items-center gap-3 mb-2">
+              <h2 className="text-3xl font-black uppercase tracking-tighter">Flipside Matches</h2>
+              <div className="px-3 py-1 bg-orange-500/20 border border-orange-500/30 rounded-full">
+                <span className="text-orange-400 text-[10px] font-black uppercase tracking-widest">0-30% Match</span>
+              </div>
+            </div>
+            <p className="text-gray-500 text-sm">People with completely different taste. Break your echo chamber.</p>
+          </div>
+
+          {flipsideMatches.length === 0 ? (
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
+              <p className="text-gray-500 uppercase tracking-widest text-xs">
+                No flipside matches yet. Check back later!
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {flipsideMatches.map(user => (
+                <Link 
+                  to={`/u/${user.username}`} 
+                  key={user.id}
+                  className="group flex items-center justify-between bg-[#0a0a0a] border border-white/5 p-6 rounded-2xl hover:bg-white/5 hover:border-orange-500/30 transition-all"
+                >
+                  <div className="flex items-center gap-6">
+                    <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-pink-500 rounded-2xl flex items-center justify-center text-2xl font-black uppercase overflow-hidden">
+                      {user.avatar_url ? (
+                        <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
+                      ) : (
+                        user.username?.[0]
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black tracking-tighter uppercase group-hover:text-orange-400 transition-colors">
+                        @{user.username}
+                      </h3>
+                      <p className="text-sm text-gray-500 mt-1 line-clamp-1">{user.bio}</p>
+                      <div className="flex gap-1 mt-2">
+                        {user.vibes?.slice(0, 4).map((v, i) => (
+                          <div key={i} className="w-8 h-8 rounded-md overflow-hidden border border-white/10">
+                            <img src={v.album_cover} className="w-full h-full object-cover" alt="" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Match</div>
+                    <div className="text-4xl font-black text-orange-400">
+                      {user.matchScore}%
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+
       </div>
     </div>
   );
