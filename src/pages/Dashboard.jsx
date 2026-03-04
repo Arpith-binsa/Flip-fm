@@ -54,12 +54,15 @@ export default function Dashboard() {
           return { ...otherUser, matchScore: score };
         });
 
-      // Sort by score
+      // Sort by score (highest to lowest)
       const sorted = matches.sort((a, b) => b.matchScore - a.matchScore);
 
-      // Split into Sync (70%+) and Flipside (0-30%)
-      setSyncMatches(sorted.filter(m => m.matchScore >= 70).slice(0, 5));
-      setFlipsideMatches(sorted.filter(m => m.matchScore <= 30).slice(0, 5));
+      // Split into Sync (15%+) and Flipside (14% and below)
+      const sync = sorted.filter(m => m.matchScore >= 15); // Already sorted high to low
+      const flipside = sorted.filter(m => m.matchScore <= 14).reverse(); // Reverse to show lowest first
+      
+      setSyncMatches(sync);
+      setFlipsideMatches(flipside.slice(0, 15)); // Cap at 15
       
       setLoading(false);
     };
@@ -154,10 +157,10 @@ export default function Dashboard() {
             <div className="flex items-center gap-3 mb-2">
               <h2 className="text-3xl font-black uppercase tracking-tighter">Sync Matches</h2>
               <div className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full">
-                <span className="text-green-400 text-[10px] font-black uppercase tracking-widest">70%+ Match</span>
+                <span className="text-green-400 text-[10px] font-black uppercase tracking-widest">15%+ Match</span>
               </div>
             </div>
-            <p className="text-gray-500 text-sm">People who vibe exactly like you</p>
+            <p className="text-gray-500 text-sm">People with similar taste (sorted from most to least similar)</p>
           </div>
 
           {syncMatches.length === 0 ? (
@@ -215,10 +218,10 @@ export default function Dashboard() {
             <div className="flex items-center gap-3 mb-2">
               <h2 className="text-3xl font-black uppercase tracking-tighter">Flipside Matches</h2>
               <div className="px-3 py-1 bg-orange-500/20 border border-orange-500/30 rounded-full">
-                <span className="text-orange-400 text-[10px] font-black uppercase tracking-widest">0-30% Match</span>
+                <span className="text-orange-400 text-[10px] font-black uppercase tracking-widest">0-14% Match</span>
               </div>
             </div>
-            <p className="text-gray-500 text-sm">People with completely different taste. Break your echo chamber.</p>
+            <p className="text-gray-500 text-sm">People with different taste (sorted from least to most similar). Break your echo chamber.</p>
           </div>
 
           {flipsideMatches.length === 0 ? (
