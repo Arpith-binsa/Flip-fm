@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom"; // <-- ADDED Link here
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "../services/supabaseClient";
 
@@ -11,18 +11,6 @@ import PublicProfile from "./PublicProfile";
 import Explore from "./Explore";
 import Tutorial from "./Tutorial";
 import MyProfile from "./MyProfile";
-
-// --- NEW FLOATING NAVBAR ---
-const Navbar = () => (
-  <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#111]/80 backdrop-blur-2xl border border-white/10 px-8 py-4 rounded-full flex gap-12 z-[100] shadow-2xl">
-    <Link to="/dashboard" className="text-gray-400 hover:text-white hover:scale-105 transition-all font-black uppercase text-xs tracking-widest">
-      Crate
-    </Link>
-    <Link to="/explore" className="text-gray-400 hover:text-white hover:scale-105 transition-all font-black uppercase text-xs tracking-widest">
-      Explore
-    </Link>
-  </nav>
-);
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -73,9 +61,6 @@ export default function App() {
         <Route path="/u/:username" element={<PublicProfile />} />
         <Route path="/my-profile" element={<MyProfile />} />
       </Routes>
-
-      {/* THE NAVBAR SHOWS UP HERE (Only if logged in and profile is complete) */}
-      {session && hasProfile && <Navbar />}
     </Router>
   );
 }

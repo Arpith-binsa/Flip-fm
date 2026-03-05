@@ -106,38 +106,42 @@ export default function Tutorial() {
             </h2>
           </div>
 
-          {/* 4 Album Slots Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[0, 1, 2, 3].map((slotIndex) => {
-              const album = selectedAlbums[slotIndex];
-              return (
-                <div 
-                  key={slotIndex}
-                  onClick={() => album && removeAlbum(slotIndex)}
-                  className={`aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-300 relative group
-                    ${album ? "border-blue-500 cursor-pointer hover:border-red-500" : "border-white/10 border-dashed bg-white/5"}
-                    ${selectedAlbums.length === 4 && album ? "shadow-[0_0_30px_rgba(37,99,235,0.4)] scale-105" : ""}
-                  `}
-                >
-                  {album ? (
-                    <>
-                      <img 
-                        src={album.artworkUrl100.replace("100x100", "600x600")} 
-                        alt={album.collectionName}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <span className="text-xs font-bold uppercase tracking-widest text-red-500">Remove</span>
+          {/* 2x2 Album Slots Grid */}
+          <div className="w-full max-w-[500px] mx-auto aspect-square">
+            <div className="grid grid-cols-2 gap-4 w-full h-full">
+              {[0, 1, 2, 3].map((slotIndex) => {
+                const album = selectedAlbums[slotIndex];
+                return (
+                  <div 
+                    key={slotIndex}
+                    onClick={() => album && removeAlbum(slotIndex)}
+                    className={`aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-300 relative group
+                      ${album ? "border-blue-500 cursor-pointer hover:border-red-500" : "border-white/10 border-dashed bg-white/5"}
+                      ${selectedAlbums.length === 4 && album ? "shadow-[0_0_30px_rgba(37,99,235,0.4)] scale-105" : ""}
+                    `}
+                  >
+                    {album ? (
+                      <>
+                        <img 
+                          src={album.artworkUrl100.replace("100x100", "600x600")} 
+                          alt={album.collectionName}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
+                          <p className="text-xs font-bold text-center px-2 line-clamp-2 mb-1">{album.collectionName}</p>
+                          <p className="text-[10px] text-gray-400 text-center px-2 line-clamp-1">{album.artistName}</p>
+                          <span className="text-xs font-bold uppercase tracking-widest text-red-500 mt-2">Remove</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white/20 font-black text-6xl">
+                        {slotIndex + 1}
                       </div>
-                    </>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/20 font-black text-4xl">
-                      {slotIndex + 1}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Search Bar (Only show if under 4 albums) */}

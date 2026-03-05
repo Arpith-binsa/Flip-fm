@@ -88,22 +88,33 @@ export default function PublicProfile() {
         )}
       </div>
 
-      {/* THEIR CRATE (Grid) */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-4xl">
-        {[0, 1, 2, 3].map((slot) => {
-          const vibe = theirVibes.find(v => v.slot_number === slot);
-          return (
-            <div key={slot} className="aspect-square bg-[#111] rounded-2xl border border-white/5 overflow-hidden relative">
-              {vibe ? (
-                <img src={vibe.album_cover} alt={vibe.album_title} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-800 font-bold uppercase tracking-widest text-xs">
-                  Empty
-                </div>
-              )}
-            </div>
-          );
-        })}
+      {/* THEIR CRATE (2x2 Square Grid) */}
+      <div className="w-full max-w-[600px] mx-auto aspect-square">
+        <div className="grid grid-cols-2 gap-4 w-full h-full">
+          {[0, 1, 2, 3].map((slot) => {
+            const vibe = theirVibes.find(v => v.slot_number === slot);
+            return (
+              <div key={slot} className="aspect-square bg-[#111] rounded-2xl border border-white/5 overflow-hidden relative group">
+                {vibe ? (
+                  <>
+                    <img src={vibe.album_cover} alt={vibe.album_title} className="w-full h-full object-cover" />
+                    {/* Hover overlay with album info */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute bottom-0 left-0 right-0 p-4">
+                        <p className="text-sm font-bold line-clamp-2">{vibe.album_title}</p>
+                        <p className="text-xs text-gray-400 line-clamp-1 mt-1">{vibe.album_artist}</p>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-800 font-bold uppercase tracking-widest text-xs">
+                    Empty
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
