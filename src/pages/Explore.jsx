@@ -69,9 +69,10 @@ export default function Explore() {
               </div>
               <div>
                 <h2 className="text-2xl font-black tracking-tighter uppercase group-hover:text-blue-500 transition-colors">@{user.username}</h2>
-                <div className="flex gap-1 mt-1">
+                {/* Mini 2x2 grid preview */}
+                <div className="grid grid-cols-2 gap-1 mt-2 w-16 h-16">
                   {user.vibes?.slice(0, 4).map((v, i) => (
-                    <div key={i} className="w-6 h-6 rounded-md bg-white/10 overflow-hidden border border-white/5">
+                    <div key={i} className="w-full h-full rounded-sm overflow-hidden border border-white/5">
                       <img src={v.album_cover} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" />
                     </div>
                   ))}

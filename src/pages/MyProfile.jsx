@@ -84,45 +84,54 @@ export default function MyProfile() {
 
   return (
     <div className="min-h-screen bg-black text-white p-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-12">
            <div>
              <h1 className="text-4xl font-black italic uppercase tracking-tighter">Your Crate</h1>
-             <p className="text-gray-500 font-medium">Pick the 4 albums that define you.</p>
+             <p className="text-gray-500 font-medium">Click any album to change it.</p>
            </div>
            {/* Navigation back to feed */}
            <button 
              onClick={() => navigate('/dashboard')}
              className="text-xs font-bold uppercase tracking-widest px-6 py-3 border border-white/10 rounded-full hover:bg-white/5 transition-all"
            >
-             Back to Feed
+             Back to Dashboard
            </button>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
-          {[0, 1, 2, 3].map((slot) => {
-            const vibe = myVibes.find(v => v.slot_number === slot);
-            return (
-              <button 
-                key={slot}
-                onClick={() => setActiveSlot(slot)}
-                className={`aspect-square rounded-3xl border-2 transition-all overflow-hidden flex items-center justify-center relative group ${
-                  activeSlot === slot ? "border-blue-500 scale-105 shadow-[0_0_30px_rgba(59,130,246,0.2)]" : "border-white/5 hover:border-white/20"
-                }`}
-              >
-                {vibe ? (
-                  <>
-                    <img src={vibe.album_cover} className="w-full h-full object-cover" alt={vibe.album_title} />
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                       <span className="text-[10px] font-black uppercase tracking-widest text-white">Change</span>
+        {/* 2x2 SQUARE GRID */}
+        <div className="w-full max-w-[600px] mx-auto aspect-square">
+          <div className="grid grid-cols-2 gap-4 w-full h-full">
+            {[0, 1, 2, 3].map((slot) => {
+              const vibe = myVibes.find(v => v.slot_number === slot);
+              return (
+                <button 
+                  key={slot}
+                  onClick={() => setActiveSlot(slot)}
+                  className={`aspect-square rounded-2xl border-2 transition-all overflow-hidden flex items-center justify-center relative group ${
+                    activeSlot === slot ? "border-blue-500 scale-105 shadow-[0_0_30px_rgba(59,130,246,0.2)]" : "border-white/5 hover:border-white/20"
+                  }`}
+                >
+                  {vibe ? (
+                    <>
+                      <img src={vibe.album_cover} className="w-full h-full object-cover" alt={vibe.album_title} />
+                      {/* Hover overlay with album info */}
+                      <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-4">
+                        <p className="text-sm font-bold text-center line-clamp-2 mb-1">{vibe.album_title}</p>
+                        <p className="text-xs text-gray-400 text-center line-clamp-1">{vibe.album_artist}</p>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-400 mt-3">Click to Change</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center">
+                      <span className="text-6xl font-black text-white/10 group-hover:text-white/30 transition-colors">+</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white/20 mt-2">Add Album</span>
                     </div>
-                  </>
-                ) : (
-                  <span className="text-xl font-black text-white/10 group-hover:text-white/30 transition-colors">+</span>
-                )}
-              </button>
-            );
-          })}
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

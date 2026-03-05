@@ -125,29 +125,33 @@ export default function Dashboard() {
             </Link>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[0, 1, 2, 3].map((slot) => {
-              const vibe = myVibes.find(v => v.slot_number === slot);
-              return (
-                <div key={slot} className="aspect-square rounded-2xl overflow-hidden border border-white/10 bg-white/5 relative group">
-                  {vibe ? (
-                    <>
-                      <img src={vibe.album_cover} className="w-full h-full object-cover" alt={vibe.album_title} />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="absolute bottom-0 left-0 right-0 p-3">
-                          <p className="text-xs font-bold truncate">{vibe.album_title}</p>
-                          <p className="text-[10px] text-gray-400 truncate">{vibe.album_artist}</p>
+          {/* 2x2 SQUARE GRID */}
+          <div className="w-full max-w-[600px] mx-auto aspect-square">
+            <div className="grid grid-cols-2 gap-4 w-full h-full">
+              {[0, 1, 2, 3].map((slot) => {
+                const vibe = myVibes.find(v => v.slot_number === slot);
+                return (
+                  <div key={slot} className="aspect-square rounded-2xl overflow-hidden border border-white/10 bg-white/5 relative group">
+                    {vibe ? (
+                      <>
+                        <img src={vibe.album_cover} className="w-full h-full object-cover" alt={vibe.album_title} />
+                        {/* Hover overlay with album info */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="absolute bottom-0 left-0 right-0 p-4">
+                            <p className="text-sm font-bold line-clamp-2">{vibe.album_title}</p>
+                            <p className="text-xs text-gray-400 line-clamp-1 mt-1">{vibe.album_artist}</p>
+                          </div>
                         </div>
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-4xl text-white/10 font-black">+</span>
                       </div>
-                    </>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-4xl text-white/10 font-black">+</span>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </section>
 
@@ -157,10 +161,10 @@ export default function Dashboard() {
             <div className="flex items-center gap-3 mb-2">
               <h2 className="text-3xl font-black uppercase tracking-tighter">Sync Matches</h2>
               <div className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full">
-                <span className="text-green-400 text-[10px] font-black uppercase tracking-widest"></span>
+                <span className="text-green-400 text-[10px] font-black uppercase tracking-widest">15%+ Match</span>
               </div>
             </div>
-            <p className="text-gray-500 text-sm">Find People with the similar taste as you</p>
+            <p className="text-gray-500 text-sm">People with similar taste (sorted from most to least similar)</p>
           </div>
 
           {syncMatches.length === 0 ? (
@@ -190,9 +194,10 @@ export default function Dashboard() {
                         @{user.username}
                       </h3>
                       <p className="text-sm text-gray-500 mt-1 line-clamp-1">{user.bio}</p>
-                      <div className="flex gap-1 mt-2">
+                      {/* Mini 2x2 grid preview */}
+                      <div className="grid grid-cols-2 gap-1 mt-2 w-16 h-16">
                         {user.vibes?.slice(0, 4).map((v, i) => (
-                          <div key={i} className="w-8 h-8 rounded-md overflow-hidden border border-white/10">
+                          <div key={i} className="w-full h-full rounded-sm overflow-hidden border border-white/10">
                             <img src={v.album_cover} className="w-full h-full object-cover" alt="" />
                           </div>
                         ))}
@@ -218,10 +223,10 @@ export default function Dashboard() {
             <div className="flex items-center gap-3 mb-2">
               <h2 className="text-3xl font-black uppercase tracking-tighter">Flipside Matches</h2>
               <div className="px-3 py-1 bg-orange-500/20 border border-orange-500/30 rounded-full">
-                <span className="text-orange-400 text-[10px] font-black uppercase tracking-widest"></span>
+                <span className="text-orange-400 text-[10px] font-black uppercase tracking-widest">0-14% Match</span>
               </div>
             </div>
-            <p className="text-gray-500 text-sm">Find you FlipSide match. Break your echo chamber.</p>
+            <p className="text-gray-500 text-sm">People with different taste (sorted from least to most similar). Break your echo chamber.</p>
           </div>
 
           {flipsideMatches.length === 0 ? (
@@ -251,9 +256,10 @@ export default function Dashboard() {
                         @{user.username}
                       </h3>
                       <p className="text-sm text-gray-500 mt-1 line-clamp-1">{user.bio}</p>
-                      <div className="flex gap-1 mt-2">
+                      {/* Mini 2x2 grid preview */}
+                      <div className="grid grid-cols-2 gap-1 mt-2 w-16 h-16">
                         {user.vibes?.slice(0, 4).map((v, i) => (
-                          <div key={i} className="w-8 h-8 rounded-md overflow-hidden border border-white/10">
+                          <div key={i} className="w-full h-full rounded-sm overflow-hidden border border-white/10">
                             <img src={v.album_cover} className="w-full h-full object-cover" alt="" />
                           </div>
                         ))}
