@@ -66,8 +66,42 @@ export default function PublicProfile() {
 
   if (!profile) return <div className="min-h-screen bg-black text-white flex items-center justify-center uppercase font-black tracking-widest text-sm">Loading Profile...</div>;
 
+  // Determine if this is a Sync or Flipside match
+  const isSync = matchScore !== null && matchScore >= 15;
+  const isFlipside = matchScore !== null && matchScore <= 14;
+  
+  // Dynamic color schemes
+  const syncColors = {
+    bg: "from-green-500/10 to-blue-500/10",
+    border: "border-green-500/30",
+    text: "text-green-400",
+    glow: "shadow-[0_0_50px_rgba(34,197,94,0.2)]",
+    badge: "bg-green-500/20 border-green-500/30",
+    badgeText: "text-green-400"
+  };
+  
+  const flipsideColors = {
+    bg: "from-orange-500/10 to-pink-500/10",
+    border: "border-orange-500/30",
+    text: "text-orange-400",
+    glow: "shadow-[0_0_50px_rgba(249,115,22,0.2)]",
+    badge: "bg-orange-500/20 border-orange-500/30",
+    badgeText: "text-orange-400"
+  };
+  
+  const defaultColors = {
+    bg: "from-white/5 to-white/5",
+    border: "border-white/20",
+    text: "text-white",
+    glow: "",
+    badge: "bg-white/5 border-white/20",
+    badgeText: "text-white"
+  };
+  
+  const theme = isSync ? syncColors : isFlipside ? flipsideColors : defaultColors;
+
   return (
-    <div className="min-h-screen bg-black text-white p-6 flex flex-col items-center">
+    <div className={`min-h-screen bg-black text-white p-6 flex flex-col items-center bg-gradient-to-br ${theme.bg}`}>
       
       {/* HEADER WITH MATCH SCORE */}
       <div className="text-center mb-12 space-y-4">
@@ -75,13 +109,11 @@ export default function PublicProfile() {
         <p className="text-gray-500 uppercase tracking-widest text-xs font-bold">{profile.bio}</p>
         
         {matchScore !== null && (
-          <div className="inline-block mt-4 px-6 py-2 rounded-full border border-white/20 bg-white/5 backdrop-blur-md">
-            <span className="text-gray-400 text-[10px] uppercase tracking-widest mr-2">Vibe Match</span>
-            <span className={`text-xl font-black ${
-              matchScore > 80 ? "text-green-400" : 
-              matchScore > 50 ? "text-blue-400" : 
-              "text-gray-400"
-            }`}>
+          <div className={`inline-block mt-4 px-6 py-2 rounded-full border ${theme.badge} backdrop-blur-md ${theme.glow}`}>
+            <span className="text-gray-400 text-[10px] uppercase tracking-widest mr-2">
+              {isSync ? "Sync Match" : isFlipside ? "Flipside Match" : "Vibe Match"}
+            </span>
+            <span className={`text-xl font-black ${theme.badgeText}`}>
               {matchScore}%
             </span>
           </div>
@@ -94,7 +126,7 @@ export default function PublicProfile() {
           {[0, 1, 2, 3].map((slot) => {
             const vibe = theirVibes.find(v => v.slot_number === slot);
             return (
-              <div key={slot} className="aspect-square bg-[#111] rounded-2xl border border-white/5 overflow-hidden relative group">
+              <div key={slot} className={`aspect-square bg-[#111] rounded-2xl border ${theme.border} overflow-hidden relative group ${theme.glow}`}>
                 {vibe ? (
                   <>
                     <img src={vibe.album_cover} alt={vibe.album_title} className="w-full h-full object-cover" />
