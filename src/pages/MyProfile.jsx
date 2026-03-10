@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { supabase } from "../services/supabaseClient"; 
 import { musicService } from "../services/musicService"; 
 import { useNavigate } from "react-router-dom";
-import { FaSpotify, FaGoogle } from "react-icons/fa";
+import GoogleColorIcon from "../components/GoogleColorIcon";
+import { FaSpotify } from "react-icons/fa";
 
 export default function MyProfile() {
   const [user, setUser] = useState(null); // Changed state name to be more explicit
