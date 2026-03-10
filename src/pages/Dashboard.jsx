@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import { calculateVibeMatch } from "../vibeMath";
 import { Link, useNavigate } from "react-router-dom";
-import { Settings, Music, Search } from "lucide-react";
+import { Settings } from "lucide-react";
+import { FaSpotify } from "react-icons/fa";
+import GoogleColorIcon from "../components/GoogleColorIcon";
 
 export default function Dashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -145,10 +147,10 @@ export default function Dashboard() {
                               href={`https://open.spotify.com/search/${encodeURIComponent(vibe.album_title + ' ' + vibe.album_artist)}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="w-8 h-8 bg-green-500 hover:bg-green-400 rounded-full flex items-center justify-center transition-all shadow-lg"
+                              className="w-8 h-8 bg-[#1DB954] hover:bg-[#1ed760] rounded-full flex items-center justify-center transition-all shadow-lg"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <Music size={16} className="text-black" />
+                              <FaSpotify size={18} className="text-white" />
                             </a>
                             
                             {/* Google Search Button */}
@@ -156,10 +158,10 @@ export default function Dashboard() {
                               href={`https://www.google.com/search?q=${encodeURIComponent(vibe.album_title + ' ' + vibe.album_artist + ' album')}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="w-8 h-8 bg-white hover:bg-gray-200 rounded-full flex items-center justify-center transition-all shadow-lg"
+                              className="w-8 h-8 bg-white hover:bg-gray-100 rounded-full flex items-center justify-center transition-all shadow-lg"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <Search size={16} className="text-black" />
+                              <GoogleColorIcon size={16} />
                             </a>
                           </div>
                           
