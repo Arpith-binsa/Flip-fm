@@ -1,9 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../services/supabaseClient"; 
 import { musicService } from "../services/musicService"; 
 import { useNavigate } from "react-router-dom";
 import { FaSpotify } from "react-icons/fa";
 import GoogleColorIcon from "../components/GoogleColorIcon";
+import Cropper from "react-easy-crop";
+import { X } from "lucide-react";
+
+// Helper function to create image element
+const createImage = (url) =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener('load', () => resolve(image));
+    image.addEventListener('error', (error) => reject(error));
+    image.src = url;
+  });
 
 export default function MyProfile() {
   const [user, setUser] = useState(null);
@@ -16,6 +27,11 @@ export default function MyProfile() {
   const [editedBio, setEditedBio] = useState("");
   const [editedUsername, setEditedUsername] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState(null); // Image selected for cropping
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [showCropper, setShowCropper] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -67,23 +83,74 @@ export default function MyProfile() {
     }
   };
 
-  const handleImageUpload = async (event) => {
+  const handleImageSelect = (event) => {
+    if (!event.target.files || event.target.files.length === 0) {
+      return;
+    }
+
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    
+    reader.onload = () => {
+      setImageToCrop(reader.result);
+      setShowCropper(true);
+    };
+    
+    reader.readAsDataURL(file);
+  };
+
+  const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  const createCroppedImage = async () => {
+    try {
+      const image = await createImage(imageToCrop);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      canvas.width = croppedAreaPixels.width;
+      canvas.height = croppedAreaPixels.height;
+
+      ctx.drawImage(
+        image,
+        croppedAreaPixels.x,
+        croppedAreaPixels.y,
+        croppedAreaPixels.width,
+        croppedAreaPixels.height,
+        0,
+        0,
+        croppedAreaPixels.width,
+        croppedAreaPixels.height
+      );
+
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          resolve(blob);
+        }, 'image/jpeg', 0.95);
+      });
+    } catch (e) {
+      console.error('Error creating cropped image:', e);
+      return null;
+    }
+  };
+
+  const handleUploadCroppedImage = async () => {
     try {
       setUploading(true);
       
-      if (!event.target.files || event.target.files.length === 0) {
-        return;
+      const croppedBlob = await createCroppedImage();
+      if (!croppedBlob) {
+        throw new Error('Failed to crop image');
       }
 
-      const file = event.target.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+      const fileName = `${user.id}-${Date.now()}.jpg`;
       const filePath = `avatars/${fileName}`;
 
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('profile-pictures')
-        .upload(filePath, file);
+        .upload(filePath, croppedBlob);
 
       if (uploadError) throw uploadError;
 
@@ -101,6 +168,8 @@ export default function MyProfile() {
       if (updateError) throw updateError;
 
       setProfile(prev => ({ ...prev, avatar_url: publicUrl }));
+      setShowCropper(false);
+      setImageToCrop(null);
       alert("Profile picture updated!");
     } catch (error) {
       alert("Error uploading image: " + error.message);
@@ -235,7 +304,7 @@ export default function MyProfile() {
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={handleImageUpload}
+                      onChange={handleImageSelect}
                       disabled={uploading}
                       className="hidden"
                     />
@@ -396,6 +465,79 @@ export default function MyProfile() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* IMAGE CROPPER MODAL */}
+      {showCropper && imageToCrop && (
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[100] flex flex-col">
+          {/* Header */}
+          <div className="p-6 flex justify-between items-center border-b border-white/10">
+            <h2 className="text-2xl font-black uppercase tracking-tighter">Crop Your Photo</h2>
+            <button
+              onClick={() => {
+                setShowCropper(false);
+                setImageToCrop(null);
+              }}
+              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Cropper Area */}
+          <div className="flex-1 relative">
+            <Cropper
+              image={imageToCrop}
+              crop={crop}
+              zoom={zoom}
+              aspect={1}
+              cropShape="round"
+              showGrid={false}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={onCropComplete}
+            />
+          </div>
+
+          {/* Controls */}
+          <div className="p-6 border-t border-white/10 space-y-4">
+            {/* Zoom Slider */}
+            <div className="max-w-md mx-auto">
+              <label className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 block">
+                Zoom
+              </label>
+              <input
+                type="range"
+                min={1}
+                max={3}
+                step={0.1}
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+                className="w-full"
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-4 max-w-md mx-auto">
+              <button
+                onClick={() => {
+                  setShowCropper(false);
+                  setImageToCrop(null);
+                }}
+                className="flex-1 text-xs font-bold uppercase tracking-widest px-6 py-4 border border-white/10 rounded-full hover:bg-white/5 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUploadCroppedImage}
+                disabled={uploading}
+                className="flex-1 text-xs font-bold uppercase tracking-widest px-6 py-4 bg-blue-600 hover:bg-blue-500 rounded-full transition-all disabled:opacity-50"
+              >
+                {uploading ? "Uploading..." : "Save Photo"}
+              </button>
+            </div>
           </div>
         </div>
       )}
