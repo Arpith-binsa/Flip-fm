@@ -152,7 +152,7 @@ export default function Tutorial() {
                               className="w-8 h-8 bg-white hover:bg-gray-200 rounded-full flex items-center justify-center transition-all shadow-lg z-10"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <Search size={16} className="text-black" />
+                              <GoogleColorIcon size={16} />
                             </a>
                           </div>
                           
