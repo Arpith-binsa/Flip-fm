@@ -128,7 +128,7 @@ export default function Dashboard() {
           </div>
           
           {/* 2x2 SQUARE GRID */}
-          <div className="w-full max-w-[600px] mx-auto aspect-square">
+          <div className="w-full max-w-[600px] mx-auto aspect-square relative">
             <div className="grid grid-cols-2 gap-4 w-full h-full">
               {[0, 1, 2, 3].map((slot) => {
                 const vibe = myVibes.find(v => v.slot_number === slot);
@@ -181,6 +181,17 @@ export default function Dashboard() {
                 );
               })}
             </div>
+            
+            {/* Profile Picture Overlay - Bottom Left */}
+            <div className="absolute bottom-0 left-0 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-black bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden shadow-2xl transform translate-y-1/4 translate-x-[-0.5rem]">
+              {currentUser?.avatar_url ? (
+                <img src={currentUser.avatar_url} className="w-full h-full object-cover" alt={currentUser.username} />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-2xl font-black text-white">
+                  {currentUser?.username?.[0]?.toUpperCase() || "?"}
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
@@ -190,10 +201,10 @@ export default function Dashboard() {
             <div className="flex items-center gap-3 mb-2">
               <h2 className="text-3xl font-black uppercase tracking-tighter">Sync Matches</h2>
               <div className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full">
-                <span className="text-green-400 text-[10px] font-black uppercase tracking-widest"></span>
+                <span className="text-green-400 text-[10px] font-black uppercase tracking-widest">15%+ Match</span>
               </div>
             </div>
-            <p className="text-gray-500 text-sm">People with similar taste</p>
+            <p className="text-gray-500 text-sm">People with similar taste (sorted from most to least similar)</p>
           </div>
 
           {syncMatches.length === 0 ? (
@@ -252,10 +263,10 @@ export default function Dashboard() {
             <div className="flex items-center gap-3 mb-2">
               <h2 className="text-3xl font-black uppercase tracking-tighter">Flipside Matches</h2>
               <div className="px-3 py-1 bg-orange-500/20 border border-orange-500/30 rounded-full">
-                <span className="text-orange-400 text-[10px] font-black uppercase tracking-widest"></span>
+                <span className="text-orange-400 text-[10px] font-black uppercase tracking-widest">0-14% Match</span>
               </div>
             </div>
-            <p className="text-gray-500 text-sm">People with different taste. Break your echo chamber.</p>
+            <p className="text-gray-500 text-sm">People with different taste (sorted from least to most similar). Break your echo chamber.</p>
           </div>
 
           {flipsideMatches.length === 0 ? (
