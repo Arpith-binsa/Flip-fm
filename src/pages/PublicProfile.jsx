@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
 import { calculateVibeMatch } from "../vibeMath";
 import { Music, Search } from "lucide-react";
+import GoogleColorIcon from "../components/GoogleColorIcon";
+import { FaSpotify } from "react-icons/fa";
 
 export default function PublicProfile() {
   const { username } = useParams();
@@ -152,8 +154,9 @@ export default function PublicProfile() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="w-8 h-8 bg-white hover:bg-gray-200 rounded-full flex items-center justify-center transition-all shadow-lg"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          <Search size={16} className="text-black" />
+                          <GoogleColorIcon size={16} />
                         </a>
                       </div>
                       

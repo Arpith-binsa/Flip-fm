@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
 import { Music, Search } from "lucide-react";
+import GoogleColorIcon from "../components/GoogleColorIcon";
+import { FaSpotify } from "react-icons/fa";
 
 export default function Tutorial() {
   const [step, setStep] = useState(0);
