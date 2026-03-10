@@ -17,7 +17,7 @@ export default function PublicProfile() {
       // 1. Get the Public Profile (CHANGED TO .maybeSingle())
       const { data: profileData, error } = await supabase
         .from('profiles')
-        .select('id, username, bio')
+        .select('id, username, bio, avatar_url')
         .eq('username', username)
         .maybeSingle(); // <--- THIS FIXES THE 406 ERROR
 
