@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../services/supabaseClient"; 
 import { musicService } from "../services/musicService"; 
 import { useNavigate } from "react-router-dom";
-import { Music, Search } from "lucide-react";
+import { FaSpotify, FaGoogle } from "react-icons/fa";
 
 export default function MyProfile() {
   const [user, setUser] = useState(null); // Changed state name to be more explicit
@@ -126,10 +126,10 @@ export default function MyProfile() {
                             href={`https://open.spotify.com/search/${encodeURIComponent(vibe.album_title + ' ' + vibe.album_artist)}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-8 h-8 bg-green-500 hover:bg-green-400 rounded-full flex items-center justify-center transition-all shadow-lg z-10"
+                            className="w-8 h-8 bg-[#1DB954] hover:bg-[#1ed760] rounded-full flex items-center justify-center transition-all shadow-lg z-10"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <Music size={16} className="text-black" />
+                            <FaSpotify size={18} className="text-white" />
                           </a>
                           
                           {/* Google Search Button */}
@@ -137,10 +137,10 @@ export default function MyProfile() {
                             href={`https://www.google.com/search?q=${encodeURIComponent(vibe.album_title + ' ' + vibe.album_artist + ' album')}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-8 h-8 bg-white hover:bg-gray-200 rounded-full flex items-center justify-center transition-all shadow-lg z-10"
+                            className="w-8 h-8 bg-white hover:bg-gray-100 rounded-full flex items-center justify-center transition-all shadow-lg z-10"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <Search size={16} className="text-black" />
+                            <FaGoogle size={14} className="text-[#4285F4]" />
                           </a>
                         </div>
                         
