@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
+import GoogleColorIcon from "../components/GoogleColorIcon";
+import { FaSpotify } from "react-icons/fa";
 
 export default function UserProfile() {
   const { username } = useParams();
