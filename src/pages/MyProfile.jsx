@@ -141,7 +141,7 @@ export default function MyProfile() {
                             className="w-8 h-8 bg-white hover:bg-gray-100 rounded-full flex items-center justify-center transition-all shadow-lg z-10"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <FaGoogle size={14} className="text-[#4285F4]" />
+                            <GoogleColorIcon size={16} />
                           </a>
                         </div>
                         
