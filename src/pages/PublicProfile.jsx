@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
 import { calculateVibeMatch } from "../vibeMath";
+import { Music, Search } from "lucide-react";
 
 export default function PublicProfile() {
   const { username } = useParams();
@@ -130,8 +131,33 @@ export default function PublicProfile() {
                 {vibe ? (
                   <>
                     <img src={vibe.album_cover} alt={vibe.album_title} className="w-full h-full object-cover" />
+                    
                     {/* Hover overlay with album info */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                      {/* Top-right icons */}
+                      <div className="absolute top-2 right-2 flex gap-2">
+                        {/* Spotify Button */}
+                        <a
+                          href={`https://open.spotify.com/search/${encodeURIComponent(vibe.album_title + ' ' + vibe.album_artist)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-8 h-8 bg-green-500 hover:bg-green-400 rounded-full flex items-center justify-center transition-all shadow-lg"
+                        >
+                          <Music size={16} className="text-black" />
+                        </a>
+                        
+                        {/* Google Search Button */}
+                        <a
+                          href={`https://www.google.com/search?q=${encodeURIComponent(vibe.album_title + ' ' + vibe.album_artist + ' album')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-8 h-8 bg-white hover:bg-gray-200 rounded-full flex items-center justify-center transition-all shadow-lg"
+                        >
+                          <Search size={16} className="text-black" />
+                        </a>
+                      </div>
+                      
+                      {/* Album info at bottom */}
                       <div className="absolute bottom-0 left-0 right-0 p-4">
                         <p className="text-sm font-bold line-clamp-2">{vibe.album_title}</p>
                         <p className="text-xs text-gray-400 line-clamp-1 mt-1">{vibe.album_artist}</p>
