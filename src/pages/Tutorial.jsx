@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
+import { Music, Search } from "lucide-react";
 
 export default function Tutorial() {
   const [step, setStep] = useState(0);
@@ -128,6 +129,32 @@ export default function Tutorial() {
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center">
+                          {/* Top-right icons */}
+                          <div className="absolute top-2 right-2 flex gap-2">
+                            {/* Spotify Button */}
+                            <a
+                              href={`https://open.spotify.com/search/${encodeURIComponent(album.collectionName + ' ' + album.artistName)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-8 h-8 bg-green-500 hover:bg-green-400 rounded-full flex items-center justify-center transition-all shadow-lg z-10"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Music size={16} className="text-black" />
+                            </a>
+                            
+                            {/* Google Search Button */}
+                            <a
+                              href={`https://www.google.com/search?q=${encodeURIComponent(album.collectionName + ' ' + album.artistName + ' album')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-8 h-8 bg-white hover:bg-gray-200 rounded-full flex items-center justify-center transition-all shadow-lg z-10"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Search size={16} className="text-black" />
+                            </a>
+                          </div>
+                          
+                          {/* Album info */}
                           <p className="text-xs font-bold text-center px-2 line-clamp-2 mb-1">{album.collectionName}</p>
                           <p className="text-[10px] text-gray-400 text-center px-2 line-clamp-1">{album.artistName}</p>
                           <span className="text-xs font-bold uppercase tracking-widest text-red-500 mt-2">Remove</span>

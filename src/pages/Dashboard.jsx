@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import { calculateVibeMatch } from "../vibeMath";
 import { Link, useNavigate } from "react-router-dom";
-import { User, Settings } from "lucide-react";
+import { Settings, Music, Search } from "lucide-react";
 
 export default function Dashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -135,8 +135,35 @@ export default function Dashboard() {
                     {vibe ? (
                       <>
                         <img src={vibe.album_cover} className="w-full h-full object-cover" alt={vibe.album_title} />
+                        
                         {/* Hover overlay with album info */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                          {/* Top-right icons */}
+                          <div className="absolute top-2 right-2 flex gap-2">
+                            {/* Spotify Button */}
+                            <a
+                              href={`https://open.spotify.com/search/${encodeURIComponent(vibe.album_title + ' ' + vibe.album_artist)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-8 h-8 bg-green-500 hover:bg-green-400 rounded-full flex items-center justify-center transition-all shadow-lg"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Music size={16} className="text-black" />
+                            </a>
+                            
+                            {/* Google Search Button */}
+                            <a
+                              href={`https://www.google.com/search?q=${encodeURIComponent(vibe.album_title + ' ' + vibe.album_artist + ' album')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-8 h-8 bg-white hover:bg-gray-200 rounded-full flex items-center justify-center transition-all shadow-lg"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Search size={16} className="text-black" />
+                            </a>
+                          </div>
+                          
+                          {/* Album info at bottom */}
                           <div className="absolute bottom-0 left-0 right-0 p-4">
                             <p className="text-sm font-bold line-clamp-2">{vibe.album_title}</p>
                             <p className="text-xs text-gray-400 line-clamp-1 mt-1">{vibe.album_artist}</p>
@@ -161,10 +188,10 @@ export default function Dashboard() {
             <div className="flex items-center gap-3 mb-2">
               <h2 className="text-3xl font-black uppercase tracking-tighter">Sync Matches</h2>
               <div className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full">
-                <span className="text-green-400 text-[10px] font-black uppercase tracking-widest"></span>
+                <span className="text-green-400 text-[10px] font-black uppercase tracking-widest">15%+ Match</span>
               </div>
             </div>
-            <p className="text-gray-500 text-sm">Find People with the similar taste as you</p>
+            <p className="text-gray-500 text-sm">People with similar taste (sorted from most to least similar)</p>
           </div>
 
           {syncMatches.length === 0 ? (
@@ -223,10 +250,10 @@ export default function Dashboard() {
             <div className="flex items-center gap-3 mb-2">
               <h2 className="text-3xl font-black uppercase tracking-tighter">Flipside Matches</h2>
               <div className="px-3 py-1 bg-orange-500/20 border border-orange-500/30 rounded-full">
-                <span className="text-orange-400 text-[10px] font-black uppercase tracking-widest"></span>
+                <span className="text-orange-400 text-[10px] font-black uppercase tracking-widest">0-14% Match</span>
               </div>
             </div>
-            <p className="text-gray-500 text-sm">Find your FlipSide match. Break your echo chamber.</p>
+            <p className="text-gray-500 text-sm">People with different taste (sorted from least to most similar). Break your echo chamber.</p>
           </div>
 
           {flipsideMatches.length === 0 ? (
