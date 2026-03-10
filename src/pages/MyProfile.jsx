@@ -2,15 +2,20 @@ import { useState, useEffect } from "react";
 import { supabase } from "../services/supabaseClient"; 
 import { musicService } from "../services/musicService"; 
 import { useNavigate } from "react-router-dom";
-import GoogleColorIcon from "../components/GoogleColorIcon";
 import { FaSpotify } from "react-icons/fa";
+import GoogleColorIcon from "../components/GoogleColorIcon";
 
 export default function MyProfile() {
-  const [user, setUser] = useState(null); // Changed state name to be more explicit
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null); // User profile data
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
   const [activeSlot, setActiveSlot] = useState(null);
   const [myVibes, setMyVibes] = useState([]);
+  const [editMode, setEditMode] = useState(false); // Toggle edit mode
+  const [editedBio, setEditedBio] = useState("");
+  const [editedUsername, setEditedUsername] = useState("");
+  const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,8 +23,20 @@ export default function MyProfile() {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (!authUser) return navigate("/login");
       
-      setUser(authUser); // Set the raw user object
+      setUser(authUser);
 
+      // Get profile data
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", authUser.id)
+        .single();
+      
+      setProfile(profileData);
+      setEditedBio(profileData?.bio || "");
+      setEditedUsername(profileData?.username || "");
+
+      // Get vibes
       const { data } = await supabase
         .from("vibes")
         .select("*")
@@ -28,6 +45,69 @@ export default function MyProfile() {
     };
     checkAuth();
   }, [navigate]);
+
+  const handleSaveProfile = async () => {
+    if (!user?.id) return;
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        bio: editedBio,
+        username: editedUsername,
+        updated_at: new Date()
+      })
+      .eq("id", user.id);
+
+    if (!error) {
+      setProfile(prev => ({ ...prev, bio: editedBio, username: editedUsername }));
+      setEditMode(false);
+      alert("Profile updated successfully!");
+    } else {
+      alert("Error updating profile: " + error.message);
+    }
+  };
+
+  const handleImageUpload = async (event) => {
+    try {
+      setUploading(true);
+      
+      if (!event.target.files || event.target.files.length === 0) {
+        return;
+      }
+
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('profile-pictures')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-pictures')
+        .getPublicUrl(filePath);
+
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      setProfile(prev => ({ ...prev, avatar_url: publicUrl }));
+      alert("Profile picture updated!");
+    } catch (error) {
+      alert("Error uploading image: " + error.message);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   useEffect(() => {
     if (searchTerm.length < 2) return setResults([]);
@@ -86,24 +166,143 @@ export default function MyProfile() {
 
   return (
     <div className="min-h-screen bg-black text-white p-8">
-      <div className="max-w-2xl mx-auto">
-        <div className="flex justify-between items-center mb-12">
-           <div>
-             <h1 className="text-4xl font-black italic uppercase tracking-tighter">Your Crate</h1>
-             <p className="text-gray-500 font-medium">Click any album to change it.</p>
-           </div>
-           {/* Navigation back to feed */}
-           <button 
-             onClick={() => navigate('/dashboard')}
-             className="text-xs font-bold uppercase tracking-widest px-6 py-3 border border-white/10 rounded-full hover:bg-white/5 transition-all"
-           >
-             Back to Dashboard
-           </button>
-        </div>
+      <div className="max-w-4xl mx-auto">
         
-        {/* 2x2 SQUARE GRID */}
-        <div className="w-full max-w-[600px] mx-auto aspect-square">
-          <div className="grid grid-cols-2 gap-4 w-full h-full">
+        {/* HEADER */}
+        <div className="flex justify-between items-center mb-12">
+          <div>
+            <h1 className="text-4xl font-black italic uppercase tracking-tighter">My Profile</h1>
+            <p className="text-gray-500 font-medium">Manage your identity and crate.</p>
+          </div>
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="text-xs font-bold uppercase tracking-widest px-6 py-3 border border-white/10 rounded-full hover:bg-white/5 transition-all"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+
+        {/* PROFILE DETAILS SECTION */}
+        <section className="mb-16 bg-white/5 border border-white/10 rounded-3xl p-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-black uppercase tracking-tighter">Profile Details</h2>
+            {!editMode ? (
+              <button
+                onClick={() => setEditMode(true)}
+                className="text-xs font-bold uppercase tracking-widest px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-full transition-all"
+              >
+                Edit Profile
+              </button>
+            ) : (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setEditMode(false);
+                    setEditedBio(profile?.bio || "");
+                    setEditedUsername(profile?.username || "");
+                  }}
+                  className="text-xs font-bold uppercase tracking-widest px-4 py-2 border border-white/10 rounded-full hover:bg-white/5 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveProfile}
+                  className="text-xs font-bold uppercase tracking-widest px-4 py-2 bg-green-600 hover:bg-green-500 rounded-full transition-all"
+                >
+                  Save Changes
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            {/* Profile Picture */}
+            <div className="flex flex-col items-center">
+              <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-4xl font-black uppercase overflow-hidden mb-4 relative group">
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} className="w-full h-full object-cover" alt="Profile" />
+                ) : (
+                  profile?.username?.[0] || "?"
+                )}
+                
+                {/* Upload overlay */}
+                {editMode && (
+                  <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer flex items-center justify-center">
+                    <span className="text-xs font-bold uppercase tracking-widest text-white">
+                      {uploading ? "Uploading..." : "Change Photo"}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploading}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 uppercase tracking-widest">Profile Picture</p>
+            </div>
+
+            {/* Username & Bio */}
+            <div className="md:col-span-2 space-y-6">
+              
+              {/* Username */}
+              <div>
+                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block">
+                  Username
+                </label>
+                {editMode ? (
+                  <input
+                    type="text"
+                    value={editedUsername}
+                    onChange={(e) => setEditedUsername(e.target.value.toLowerCase())}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-lg focus:outline-none focus:border-blue-500 transition-all"
+                    placeholder="username"
+                  />
+                ) : (
+                  <p className="text-2xl font-black tracking-tighter">@{profile?.username}</p>
+                )}
+                {editMode && (
+                  <p className="text-xs text-yellow-500 mt-1">⚠️ Changing username will affect your profile URL</p>
+                )}
+              </div>
+
+              {/* Bio */}
+              <div>
+                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block">
+                  Bio
+                </label>
+                {editMode ? (
+                  <textarea
+                    value={editedBio}
+                    onChange={(e) => setEditedBio(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 h-32 focus:outline-none focus:border-blue-500 transition-all resize-none"
+                    placeholder="Tell the world about yourself and what you listen to..."
+                    maxLength={200}
+                  />
+                ) : (
+                  <p className="text-gray-400">{profile?.bio || "No bio yet."}</p>
+                )}
+                {editMode && (
+                  <p className="text-xs text-gray-500 mt-1">{editedBio.length}/200 characters</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* YOUR CRATE SECTION */}
+        <section>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-black uppercase tracking-tighter">Your Crate</h2>
+            <p className="text-xs text-gray-500 uppercase tracking-widest">Click any album to change it</p>
+          </div>
+        
+          {/* 2x2 SQUARE GRID */}
+          <div className="w-full max-w-[600px] mx-auto aspect-square">
+            <div className="grid grid-cols-2 gap-4 w-full h-full">
             {[0, 1, 2, 3].map((slot) => {
               const vibe = myVibes.find(v => v.slot_number === slot);
               return (
@@ -162,6 +361,7 @@ export default function MyProfile() {
             })}
           </div>
         </div>
+        </section>
       </div>
 
       {/* SEARCH OVERLAY */}
