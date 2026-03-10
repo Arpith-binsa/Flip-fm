@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
-import GoogleColorIcon from "../components/GoogleColorIcon";
-import { FaSpotify } from "react-icons/fa";
 
 export default function UserProfile() {
   const { username } = useParams();
@@ -65,40 +63,53 @@ export default function UserProfile() {
         </div>
 
         {/* THE 2X2 CRATE */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {[0, 1, 2, 3].map((slot) => {
-            const vibe = profile.vibes?.find((v) => v.slot_number === slot);
-            return (
-              <div 
-                key={slot} 
-                className="aspect-square bg-zinc-900/50 rounded-[40px] border border-white/5 overflow-hidden relative group cursor-pointer"
-                onClick={() => vibe && handleListen(vibe)}
-              >
-                {vibe ? (
-                  <>
-                    <img src={vibe.album_cover} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                    
-                    {/* HOVER OVERLAY */}
-                    <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-8 backdrop-blur-sm">
-                       <h3 className="text-2xl font-black uppercase italic leading-tight translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                         {vibe.album_title}
-                       </h3>
-                       <p className="text-zinc-400 font-bold uppercase tracking-widest text-sm mt-1 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
-                         {vibe.album_artist}
-                       </p>
-                       <div className="mt-6 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-500">
-                         Listen on YouTube Music →
-                       </div>
+        <div className="relative max-w-[600px] mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {[0, 1, 2, 3].map((slot) => {
+              const vibe = profile.vibes?.find((v) => v.slot_number === slot);
+              return (
+                <div 
+                  key={slot} 
+                  className="aspect-square bg-zinc-900/50 rounded-[40px] border border-white/5 overflow-hidden relative group cursor-pointer"
+                  onClick={() => vibe && handleListen(vibe)}
+                >
+                  {vibe ? (
+                    <>
+                      <img src={vibe.album_cover} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                      
+                      {/* HOVER OVERLAY */}
+                      <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-8 backdrop-blur-sm">
+                         <h3 className="text-2xl font-black uppercase italic leading-tight translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                           {vibe.album_title}
+                         </h3>
+                         <p className="text-zinc-400 font-bold uppercase tracking-widest text-sm mt-1 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
+                           {vibe.album_artist}
+                         </p>
+                         <div className="mt-6 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-500">
+                           Listen on YouTube Music →
+                         </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-zinc-800 font-black italic uppercase tracking-widest">
+                      Empty Slot
                     </div>
-                  </>
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-zinc-800 font-black italic uppercase tracking-widest">
-                    Empty Slot
-                  </div>
-                )}
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          
+          {/* Profile Picture Overlay - Bottom Left */}
+          <div className="absolute bottom-0 left-0 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-black bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden shadow-2xl transform translate-y-1/4 translate-x-[-0.5rem]">
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} className="w-full h-full object-cover" alt={profile.username} />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-2xl font-black text-white">
+                {profile?.username?.[0]?.toUpperCase() || "?"}
               </div>
-            );
-          })}
+            )}
+          </div>
         </div>
       </div>
     </div>
