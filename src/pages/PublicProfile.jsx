@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
 import { calculateVibeMatch } from "../vibeMath";
-import { Music, Search } from "lucide-react";
-import GoogleColorIcon from "../components/GoogleColorIcon";
 import { FaSpotify } from "react-icons/fa";
+import GoogleColorIcon from "../components/GoogleColorIcon";
 
 export default function PublicProfile() {
   const { username } = useParams();
@@ -124,7 +123,7 @@ export default function PublicProfile() {
       </div>
 
       {/* THEIR CRATE (2x2 Square Grid) */}
-      <div className="w-full max-w-[600px] mx-auto aspect-square">
+      <div className="w-full max-w-[600px] mx-auto aspect-square relative">
         <div className="grid grid-cols-2 gap-4 w-full h-full">
           {[0, 1, 2, 3].map((slot) => {
             const vibe = theirVibes.find(v => v.slot_number === slot);
@@ -143,7 +142,7 @@ export default function PublicProfile() {
                           href={`https://open.spotify.com/search/${encodeURIComponent(vibe.album_title + ' ' + vibe.album_artist)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="w-8 h-8 bg-green-500 hover:bg-green-400 rounded-full flex items-center justify-center transition-all shadow-lg"
+                          className="w-8 h-8 bg-[#1DB954] hover:bg-[#1ed760] rounded-full flex items-center justify-center transition-all shadow-lg"
                         >
                           <FaSpotify size={18} className="text-white" />
                         </a>
@@ -153,8 +152,7 @@ export default function PublicProfile() {
                           href={`https://www.google.com/search?q=${encodeURIComponent(vibe.album_title + ' ' + vibe.album_artist + ' album')}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="w-8 h-8 bg-white hover:bg-gray-200 rounded-full flex items-center justify-center transition-all shadow-lg"
-                          onClick={(e) => e.stopPropagation()}
+                          className="w-8 h-8 bg-white hover:bg-gray-100 rounded-full flex items-center justify-center transition-all shadow-lg"
                         >
                           <GoogleColorIcon size={16} />
                         </a>
@@ -175,6 +173,17 @@ export default function PublicProfile() {
               </div>
             );
           })}
+        </div>
+        
+        {/* Profile Picture Overlay - Bottom Left */}
+        <div className="absolute bottom-0 left-0 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-black bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden shadow-2xl transform translate-y-1/4 translate-x-[-0.5rem]">
+          {profile?.avatar_url ? (
+            <img src={profile.avatar_url} className="w-full h-full object-cover" alt={profile.username} />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-2xl font-black text-white">
+              {profile?.username?.[0]?.toUpperCase() || "?"}
+            </div>
+          )}
         </div>
       </div>
     </div>

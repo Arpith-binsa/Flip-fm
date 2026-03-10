@@ -370,7 +370,7 @@ export default function MyProfile() {
           </div>
         
           {/* 2x2 SQUARE GRID */}
-          <div className="w-full max-w-[600px] mx-auto aspect-square">
+          <div className="w-full max-w-[600px] mx-auto aspect-square relative">
             <div className="grid grid-cols-2 gap-4 w-full h-full">
             {[0, 1, 2, 3].map((slot) => {
               const vibe = myVibes.find(v => v.slot_number === slot);
@@ -428,6 +428,17 @@ export default function MyProfile() {
                 </button>
               );
             })}
+          </div>
+          
+          {/* Profile Picture Overlay - Bottom Left */}
+          <div className="absolute bottom-0 left-0 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-black bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden shadow-2xl transform translate-y-1/4 translate-x-[-0.5rem]">
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} className="w-full h-full object-cover" alt={profile.username} />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-2xl font-black text-white">
+                {profile?.username?.[0]?.toUpperCase() || "?"}
+              </div>
+            )}
           </div>
         </div>
         </section>
