@@ -145,7 +145,7 @@ export default function PublicProfile() {
                           rel="noopener noreferrer"
                           className="w-8 h-8 bg-green-500 hover:bg-green-400 rounded-full flex items-center justify-center transition-all shadow-lg"
                         >
-                          <Music size={16} className="text-black" />
+                          <FaSpotify size={18} className="text-white" />
                         </a>
                         
                         {/* Google Search Button */}
