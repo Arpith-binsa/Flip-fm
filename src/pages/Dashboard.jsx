@@ -236,10 +236,10 @@ export default function Dashboard() {
             <div className="flex items-center gap-3 mb-2">
               <h2 className="text-3xl font-black uppercase tracking-tighter">Sync Matches</h2>
               <div className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full">
-                <span className="text-green-400 text-[10px] font-black uppercase tracking-widest">15%+ Match</span>
+                <span className="text-green-400 text-[10px] font-black uppercase tracking-widest"></span>
               </div>
             </div>
-            <p className="text-gray-500 text-sm">People with similar taste (sorted from most to least similar)</p>
+            <p className="text-gray-500 text-sm">People with similar taste.</p>
           </div>
 
           {syncMatches.length === 0 ? (
@@ -298,10 +298,10 @@ export default function Dashboard() {
             <div className="flex items-center gap-3 mb-2">
               <h2 className="text-3xl font-black uppercase tracking-tighter">Flipside Matches</h2>
               <div className="px-3 py-1 bg-orange-500/20 border border-orange-500/30 rounded-full">
-                <span className="text-orange-400 text-[10px] font-black uppercase tracking-widest">0-14% Match</span>
+                <span className="text-orange-400 text-[10px] font-black uppercase tracking-widest"></span>
               </div>
             </div>
-            <p className="text-gray-500 text-sm">People with different taste (sorted from least to most similar). Break your echo chamber.</p>
+            <p className="text-gray-500 text-sm">People with different taste. Break your echo chamber.</p>
           </div>
 
           {flipsideMatches.length === 0 ? (
