@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import { calculateVibeMatch } from "../vibeMath";
 import { Link, useNavigate } from "react-router-dom";
-import { Settings } from "lucide-react";
+import { Settings, Sparkles } from "lucide-react";
 import { FaSpotify } from "react-icons/fa";
 import GoogleColorIcon from "../components/GoogleColorIcon";
 
@@ -72,6 +72,24 @@ export default function Dashboard() {
     loadDashboard();
   }, [navigate]);
 
+  const handleFeelingLucky = async () => {
+    try {
+      // Get all users except current user
+      const { data: allUsers } = await supabase
+        .from('profiles')
+        .select('username')
+        .neq('id', currentUser.id);
+      
+      if (allUsers && allUsers.length > 0) {
+        // Pick a random user
+        const randomUser = allUsers[Math.floor(Math.random() * allUsers.length)];
+        navigate(`/u/${randomUser.username}`);
+      }
+    } catch (error) {
+      console.error('Error finding random user:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -102,6 +120,13 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="flex gap-4">
+            <button 
+              onClick={handleFeelingLucky}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-full transition-all text-xs uppercase tracking-widest font-bold shadow-lg"
+            >
+              <Sparkles size={14} />
+              Feeling Lucky
+            </button>
             <button 
               onClick={() => navigate('/my-profile')}
               className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all text-xs uppercase tracking-widest font-bold"
