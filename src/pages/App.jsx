@@ -59,8 +59,8 @@ export default function App() {
         <Route path="/tutorial" element={session ? (hasProfile ? <Tutorial /> : <Navigate to="/onboarding" replace />) : <Navigate to="/login" replace />} />
         <Route path="/dashboard" element={session ? (hasProfile ? <Dashboard /> : <Navigate to="/onboarding" replace />) : <Navigate to="/login" replace />} />
         <Route path="/explore" element={<Explore />} />
-        <Route path="/u/:username" element={<UserProfile />} />
-        <Route path="/my-profile" element={<MyProfile />} />
+        <Route path="/my-profile" element={session ? (hasProfile ? <MyProfile /> : <Navigate to="/onboarding" replace />) : <Navigate to="/login" replace />} />
+        <Route path="/u/:username" element={<PublicProfile />} />
       </Routes>
     </Router>
   );
