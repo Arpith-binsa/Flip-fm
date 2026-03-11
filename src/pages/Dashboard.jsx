@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import { calculateVibeMatch } from "../vibeMath";
 import { Link, useNavigate } from "react-router-dom";
-import { Settings, Sparkles } from "lucide-react";
+import { Settings, Sparkles, X } from "lucide-react";
 import { FaSpotify } from "react-icons/fa";
 import GoogleColorIcon from "../components/GoogleColorIcon";
 
@@ -12,6 +12,7 @@ export default function Dashboard() {
   const [syncMatches, setSyncMatches] = useState([]); // High compatibility (70%+)
   const [flipsideMatches, setFlipsideMatches] = useState([]); // Low compatibility (0-30%)
   const [loading, setLoading] = useState(true);
+  const [showLuckyModal, setShowLuckyModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -84,6 +85,7 @@ export default function Dashboard() {
         // Pick a random user
         const randomUser = allUsers[Math.floor(Math.random() * allUsers.length)];
         navigate(`/u/${randomUser.username}`);
+        setShowLuckyModal(false);
       }
     } catch (error) {
       console.error('Error finding random user:', error);
@@ -121,7 +123,7 @@ export default function Dashboard() {
           </div>
           <div className="flex gap-4">
             <button 
-              onClick={handleFeelingLucky}
+              onClick={() => setShowLuckyModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-full transition-all text-xs uppercase tracking-widest font-bold shadow-lg"
             >
               <Sparkles size={14} />
@@ -345,6 +347,65 @@ export default function Dashboard() {
         </section>
 
       </div>
+
+      {/* FEELING LUCKY MODAL */}
+      {showLuckyModal && (
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[100] flex items-center justify-center p-6">
+          <div className="max-w-lg w-full bg-gradient-to-br from-purple-900/30 to-pink-900/30 border border-purple-500/30 rounded-3xl p-8 relative">
+            {/* Close button */}
+            <button
+              onClick={() => setShowLuckyModal(false)}
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all"
+            >
+              <X size={20} />
+            </button>
+
+            {/* Content */}
+            <div className="text-center space-y-6">
+              {/* Icon */}
+              <div className="w-20 h-20 mx-auto bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                <Sparkles size={40} className="text-white" />
+              </div>
+
+              {/* Title */}
+              <h2 className="text-4xl font-black uppercase tracking-tighter">
+                Feeling Lucky?
+              </h2>
+
+              {/* Description */}
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Discover someone completely random on Flip-FM. Break out of your echo chamber and explore new musical worlds. You never know who you'll find!
+              </p>
+
+              {/* Stats */}
+              <div className="flex justify-center gap-4 text-xs uppercase tracking-widest font-bold">
+                <div className="px-4 py-2 bg-white/5 rounded-full border border-white/10">
+                  🎲 Random Discovery
+                </div>
+                <div className="px-4 py-2 bg-white/5 rounded-full border border-white/10">
+                  🌍 Anyone on Flip-FM
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <button
+                onClick={handleFeelingLucky}
+                className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-full text-lg font-black uppercase tracking-widest transition-all shadow-lg hover:shadow-purple-500/50"
+              >
+                Take Me There! ✨
+              </button>
+
+              {/* Cancel */}
+              <button
+                onClick={() => setShowLuckyModal(false)}
+                className="text-xs text-gray-500 hover:text-white uppercase tracking-widest font-bold transition-colors"
+              >
+                Maybe Later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
