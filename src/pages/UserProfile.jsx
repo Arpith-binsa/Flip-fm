@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
 
 export default function UserProfile() {
@@ -39,12 +39,20 @@ export default function UserProfile() {
   return (
     <div className="min-h-screen bg-black text-white p-8">
       {/* TOP NAV */}
-      <button 
-        onClick={() => navigate(-1)} 
-        className="mb-12 text-xs font-black uppercase tracking-[0.3em] text-zinc-500 hover:text-white transition-colors"
-      >
-        ← Back to Feed
-      </button>
+      <div className="flex justify-between items-center mb-12 max-w-4xl mx-auto">
+        <Link 
+          to="/dashboard" 
+          className="text-2xl font-black italic uppercase tracking-tighter hover:text-purple-400 transition-colors"
+        >
+          FLIP-FM
+        </Link>
+        <button 
+          onClick={() => navigate(-1)} 
+          className="text-xs font-black uppercase tracking-[0.3em] text-zinc-500 hover:text-white transition-colors"
+        >
+          ← Back
+        </button>
+      </div>
 
       <div className="max-w-4xl mx-auto">
         {/* PROFILE HEADER */}

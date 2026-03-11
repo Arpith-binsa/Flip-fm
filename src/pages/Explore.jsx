@@ -52,6 +52,14 @@ export default function Explore() {
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <header className="max-w-4xl mx-auto mb-12">
+        <div className="flex items-center gap-6 mb-4">
+          <Link 
+            to="/dashboard" 
+            className="text-2xl font-black italic uppercase tracking-tighter hover:text-purple-400 transition-colors"
+          >
+            FLIP-FM
+          </Link>
+        </div>
         <h1 className="text-6xl font-black italic tracking-tighter uppercase leading-none">Explore</h1>
         <p className="text-gray-500 font-bold uppercase tracking-widest text-xs mt-2">Find your musical soulmates</p>
       </header>
