@@ -27,20 +27,49 @@ export default function SignUp() {
   const handleSignUp = async (e) => {
     e.preventDefault();
     
-    // NEW: Match Check
+    // Match Check
     if (password !== confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signUp({ email, password });
     
-    if (error) {
-      alert(error.message);
-      setLoading(false);
-    } else {
-      setShowOtp(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          emailRedirectTo: window.location.origin + '/onboarding'
+        }
+      });
+      
+      if (error) {
+        console.error('Signup error:', error);
+        alert(error.message);
+        setLoading(false);
+        return;
+      }
+
+      // Check if email confirmation is required
+      if (data?.user && !data?.session) {
+        // Email confirmation is enabled - show OTP screen
+        console.log('Email confirmation required');
+        setShowOtp(true);
+        setLoading(false);
+      } else if (data?.session) {
+        // Auto-confirmed - go straight to onboarding
+        console.log('Auto-confirmed, redirecting to onboarding');
+        navigate("/onboarding");
+      } else {
+        // Unexpected response
+        console.log('Unexpected signup response:', data);
+        setShowOtp(true);
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('Signup exception:', err);
+      alert('An error occurred during signup. Please try again.');
       setLoading(false);
     }
   };
@@ -49,17 +78,32 @@ export default function SignUp() {
     e.preventDefault();
     setLoading(true);
     
-    const { data, error } = await supabase.auth.verifyOtp({
-      email,
-      token: otp,
-      type: 'signup'
-    });
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token: otp,
+        type: 'signup'
+      });
 
-    if (error) {
-      alert(error.message);
+      if (error) {
+        console.error('OTP verification error:', error);
+        alert(error.message || 'Invalid verification code. Please try again.');
+        setLoading(false);
+        return;
+      }
+
+      if (data?.session) {
+        console.log('OTP verified successfully');
+        navigate("/onboarding");
+      } else {
+        console.log('OTP verification response:', data);
+        alert('Verification successful! Please log in.');
+        navigate("/login");
+      }
+    } catch (err) {
+      console.error('OTP verification exception:', err);
+      alert('An error occurred during verification. Please try again.');
       setLoading(false);
-    } else {
-      navigate("/onboarding"); 
     }
   };
 
