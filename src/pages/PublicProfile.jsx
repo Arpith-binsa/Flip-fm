@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
 import { calculateVibeMatch } from "../vibeMath";
 import { FaSpotify } from "react-icons/fa";
@@ -104,6 +104,16 @@ export default function PublicProfile() {
 
   return (
     <div className={`min-h-screen bg-black text-white p-6 flex flex-col items-center bg-gradient-to-br ${theme.bg}`}>
+      
+      {/* TOP NAV */}
+      <div className="w-full max-w-6xl mb-8">
+        <Link 
+          to="/dashboard" 
+          className="text-2xl font-black italic uppercase tracking-tighter hover:text-purple-400 transition-colors inline-block"
+        >
+          FLIP-FM
+        </Link>
+      </div>
       
       {/* HEADER WITH MATCH SCORE */}
       <div className="text-center mb-12 space-y-4">

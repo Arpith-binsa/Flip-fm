@@ -113,13 +113,21 @@ export default function Dashboard() {
       {/* HEADER */}
       <header className="border-b border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-6 py-6 flex justify-between items-center">
-          <div>
-            <h1 className="text-4xl font-black italic uppercase tracking-tighter">
-              Your Crate
-            </h1>
-            <p className="text-gray-500 text-xs uppercase tracking-widest mt-1">
-              Welcome back, @{currentUser?.username}
-            </p>
+          <div className="flex items-center gap-8">
+            {/* Logo */}
+            <Link to="/dashboard" className="text-2xl font-black italic uppercase tracking-tighter hover:text-purple-400 transition-colors">
+              FLIP-FM
+            </Link>
+            
+            {/* Page Title */}
+            <div>
+              <h1 className="text-4xl font-black italic uppercase tracking-tighter">
+                Your Crate
+              </h1>
+              <p className="text-gray-500 text-xs uppercase tracking-widest mt-1">
+                Welcome back, @{currentUser?.username}
+              </p>
+            </div>
           </div>
           <div className="flex gap-4">
             <button 
