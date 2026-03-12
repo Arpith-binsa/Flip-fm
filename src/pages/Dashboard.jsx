@@ -39,7 +39,7 @@ export default function Dashboard() {
       setMyVibes(myVibeData || []);
 
       // 4. Get all other users and their vibes
-      const { data: allProfiles } = await supabase
+      const { data: allProfiles, error: profilesError } = await supabase
         .from('profiles')
         .select(`
           id,
@@ -48,6 +48,22 @@ export default function Dashboard() {
           avatar_url,
           vibes (*)
         `);
+
+      // Handle query errors
+      if (profilesError) {
+        console.error('Error loading profiles:', profilesError);
+        setLoading(false);
+        return;
+      }
+
+      // Handle null/empty results
+      if (!allProfiles || allProfiles.length === 0) {
+        console.log('No profiles found');
+        setSyncMatches([]);
+        setFlipsideMatches([]);
+        setLoading(false);
+        return;
+      }
 
       // 5. Calculate matches and categorize
       const matches = allProfiles
@@ -239,7 +255,7 @@ export default function Dashboard() {
                 <span className="text-green-400 text-[10px] font-black uppercase tracking-widest"></span>
               </div>
             </div>
-            <p className="text-gray-500 text-sm">People with similar taste.</p>
+            <p className="text-gray-500 text-sm">People with similar taste. </p>
           </div>
 
           {syncMatches.length === 0 ? (
