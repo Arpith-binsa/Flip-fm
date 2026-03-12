@@ -38,16 +38,10 @@ export default function Dashboard() {
       
       setMyVibes(myVibeData || []);
 
-      // 4. Get all other users and their vibes
+      // 4. Get all other users' profiles
       const { data: allProfiles, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          id,
-          username,
-          bio,
-          avatar_url,
-          vibes (*)
-        `);
+        .select('id, username, bio, avatar_url');
 
       // Handle query errors
       if (profilesError) {
@@ -65,13 +59,39 @@ export default function Dashboard() {
         return;
       }
 
-      // 5. Calculate matches and categorize
-      const matches = allProfiles
+      // 5. Get ALL vibes for all users
+      const { data: allVibes, error: vibesError } = await supabase
+        .from('vibes')
+        .select('*');
+
+      if (vibesError) {
+        console.error('Error loading vibes:', vibesError);
+        setLoading(false);
+        return;
+      }
+
+      console.log('Total profiles loaded:', allProfiles.length);
+      console.log('Total vibes loaded:', allVibes?.length || 0);
+
+      // 6. Combine profiles with their vibes
+      const profilesWithVibes = allProfiles.map(profile => ({
+        ...profile,
+        vibes: (allVibes || []).filter(v => v.user_id === profile.id)
+      }));
+
+      console.log('Current user ID:', user.id);
+      console.log('My vibes:', myVibeData);
+
+      // 7. Calculate matches and categorize
+      const matches = profilesWithVibes
         .filter(p => p.id !== user.id && p.vibes?.length > 0) // Filter out self and users with no vibes
         .map(otherUser => {
           const score = calculateVibeMatch(myVibeData || [], otherUser.vibes || []);
           return { ...otherUser, matchScore: score };
         });
+
+      console.log('Calculated matches:', matches.length);
+      console.log('Match scores:', matches.map(m => ({ username: m.username, score: m.matchScore })));
 
       // Sort by score (highest to lowest)
       const sorted = matches.sort((a, b) => b.matchScore - a.matchScore);
@@ -255,7 +275,7 @@ export default function Dashboard() {
                 <span className="text-green-400 text-[10px] font-black uppercase tracking-widest"></span>
               </div>
             </div>
-            <p className="text-gray-500 text-sm">People with similar taste. </p>
+            <p className="text-gray-500 text-sm">People with similar taste.</p>
           </div>
 
           {syncMatches.length === 0 ? (
