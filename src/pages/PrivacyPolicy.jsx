@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-export default function Privacy() {
+export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-4xl mx-auto">
@@ -23,9 +23,9 @@ export default function Privacy() {
           {/* Intro */}
           <section>
             <p className="text-lg text-gray-300 leading-relaxed">
-              Hey there! 👋 We're Flip-FM, a small music discovery community built by music lovers, for music lovers. 
+              Hey there! 👋 We at FLip-FM value your privacy, we're a small music discovery community built by music lovers, for music lovers. 
               We take your privacy seriously, but we also want to be upfront and honest about how everything works. 
-              No corporate jargon, just real talk about your data.
+              No corporate jargon.
             </p>
           </section>
 
@@ -35,7 +35,7 @@ export default function Privacy() {
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
               <div>
                 <h3 className="text-xl font-bold text-blue-400 mb-2">Account Info</h3>
-                <p className="text-gray-300">Your email address, username, password (encrypted!), and bio. We need this to create your account and let you log in.</p>
+                <p className="text-gray-300">Your email address, username, password (encrypted!, We can't see this even if we tried, so keep it safe.), and bio. We need this to create your account and let you log in.</p>
               </div>
               <div>
                 <h3 className="text-xl font-bold text-blue-400 mb-2">Your Music Taste</h3>
@@ -46,8 +46,8 @@ export default function Privacy() {
                 <p className="text-gray-300">If you upload one, we store it so people can see your face (or whatever pic you choose).</p>
               </div>
               <div>
-                <h3 className="text-xl font-bold text-blue-400 mb-2">Messages (Coming Soon)</h3>
-                <p className="text-gray-300">When we add chat, we'll store your messages so you can have conversations with other users.</p>
+                <h3 className="text-xl font-bold text-blue-400 mb-2">Messages</h3>
+                <p className="text-gray-300">Once you start chatting, we'll store your messages so you can have conversations with other users.</p>
               </div>
             </div>
           </section>
@@ -83,7 +83,7 @@ export default function Privacy() {
               <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-5">
                 <h3 className="text-lg font-bold text-blue-400 mb-2">☁️ Vercel</h3>
                 <p className="text-gray-300 text-sm leading-relaxed">
-                  Hosts the website and makes it fast. They might see basic stuff like your IP address and browser type (standard web hosting stuff). 
+                  Hosts the website and makes it fast. They might see basic stuff like your IP address and browser type (standard web hosting nonsense). 
                   <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline ml-1">
                     Vercel Privacy Policy
                   </a>
@@ -121,7 +121,7 @@ export default function Privacy() {
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-green-400 text-xl">✓</span>
-                <span>We <strong>DON'T share your email</strong> with anyone.</span>
+                <span>We <strong>DON'T share your email</strong> with anyone other than moderators and admins inside FLip-FM (and only in a case of investigation).</span>
               </li>
             </ul>
           </section>
@@ -144,7 +144,7 @@ export default function Privacy() {
               <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-5">
                 <h3 className="text-lg font-bold text-purple-400 mb-3">🔒 Private (Only You See)</h3>
                 <ul className="space-y-2 text-sm text-gray-300">
-                  <li>• Your email address</li>
+                  <li>• Your email address (unless reported)</li>
                   <li>• Your password (encrypted)</li>
                   <li>• Your messages (unless reported)</li>
                 </ul>
@@ -170,7 +170,9 @@ export default function Privacy() {
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-yellow-400">⚠️</span>
-                  <span><strong>Your Safety:</strong> Don't share personal info (phone number, address, etc.) with strangers. Use common sense!</span>
+                  <span><strong>Your Safety:</strong> Don't share personal info (phone number, address, etc.) with strangers. <a href="https://www.freecodecamp.org/news/the-beginners-guide-to-online-privacy-7149b33c4a3e/" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline ml-1">
+                    Be safe on the Internet!
+                  </a></span>
                 </li>
               </ul>
             </div>
@@ -214,7 +216,7 @@ export default function Privacy() {
               We're a small team and we actually read messages. If you have questions, concerns, or want to request your data:
             </p>
             <p className="text-blue-400 mt-3">
-              📧 Email us: <a href="mailto:support@flip-fm.com" className="underline hover:text-blue-300">support@flip-fm.com</a>
+              📧 Email us: <a href="mailto:arpithbinsa@gmail.com" className="underline hover:text-blue-300">arpithbinsa@gmail.com</a>
             </p>
           </section>
 

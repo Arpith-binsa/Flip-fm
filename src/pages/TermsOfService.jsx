@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-export default function Terms() {
+export default function TermsOfService() {
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-4xl mx-auto">
@@ -219,7 +219,7 @@ export default function Terms() {
               If something in here is confusing or you want to report a violation:
             </p>
             <p className="text-blue-400 mt-3">
-              📧 Email us: <a href="mailto:support@flip-fm.com" className="underline hover:text-blue-300">support@flip-fm.com</a>
+              📧 Email us: <a href="mailto:arpithbinsa@gmail.com" className="underline hover:text-blue-300">arpithbinsa@gmail.com</a>
             </p>
           </section>
 

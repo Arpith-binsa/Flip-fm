@@ -12,6 +12,8 @@ import UserProfile from "./UserProfile";
 import Explore from "./Explore";
 import Tutorial from "./Tutorial";
 import MyProfile from "./MyProfile";
+import PrivacyPolicy from "./PrivacyPolicy";
+import TermsOfService from "./TermsOfService";
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -61,6 +63,8 @@ export default function App() {
         <Route path="/explore" element={<Explore />} />
         <Route path="/my-profile" element={session ? (hasProfile ? <MyProfile /> : <Navigate to="/onboarding" replace />) : <Navigate to="/login" replace />} />
         <Route path="/u/:username" element={<PublicProfile />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
       </Routes>
     </Router>
   );
