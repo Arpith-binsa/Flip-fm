@@ -39,7 +39,7 @@ export default function TermsOfService() {
               </div>
               <div>
                 <h3 className="text-xl font-bold text-blue-400 mb-2">2. Your Account</h3>
-                <p className="text-gray-300">You're responsible for your account. Don't share your password, don't let others use your account, and pick a strong password. If someone hacks your account because you used "password123", that's on you.</p>
+                <p className="text-gray-300">You're responsible for your account. Don't share your password, don't let others use your account, and pick a strong password. If someone hacks your account because you used "password123", that's on you. (But our kind and smart support team will help you anyways.)</p>
               </div>
               <div>
                 <h3 className="text-xl font-bold text-blue-400 mb-2">3. One Account Per Person</h3>
@@ -64,15 +64,15 @@ export default function TermsOfService() {
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-red-400 font-bold">•</span>
-                  <span><strong>Harassment or bullying</strong> - Don't be a jerk. If someone asks you to leave them alone, leave them alone.</span>
+                  <span><strong>Harassment or bullying</strong> - Don't be a jerk. If someone asks you to leave them alone, LEAVE THEM ALONE!.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-red-400 font-bold">•</span>
-                  <span><strong>Sexual content or solicitation</strong> - This isn't a dating app. Keep it about music.</span>
+                  <span><strong>Sexual content or solicitation</strong> - This isn't a dating app. Try to keep it about music and keep it fun.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-red-400 font-bold">•</span>
-                  <span><strong>Spam or advertising</strong> - Don't promote your SoundCloud, crypto scams, or MLM schemes.</span>
+                  <span><strong>Spam or advertising</strong> - Don't promote your Business, crypto scams, or MLM schemes.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-red-400 font-bold">•</span>
@@ -84,7 +84,7 @@ export default function TermsOfService() {
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-red-400 font-bold">•</span>
-                  <span><strong>Doxxing or sharing personal info</strong> - Don't share anyone's private information (addresses, phone numbers, etc.) without permission.</span>
+                  <span><strong>Doxxing or sharing personal info</strong> - Don't share anyone's private information (addresses, phone numbers, etc.) without permission. And Don't give anyone your private details either.</span>
                 </li>
               </ul>
             </div>
@@ -97,7 +97,7 @@ export default function TermsOfService() {
               <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-5">
                 <h3 className="text-lg font-bold text-purple-400 mb-2">What You Post</h3>
                 <p className="text-gray-300 text-sm leading-relaxed">
-                  Your profile (username, bio, albums, messages) belongs to you. By posting on Flip-FM, you give us permission to display it on the site and show it to other users. That's literally the point of the app.
+                  Your profile (username, bio, albums, messages) belongs to you. By posting on Flip-FM, you give us permission to display it on the site and show it to other users. That's the basic idea of the app.
                 </p>
               </div>
               
@@ -140,7 +140,7 @@ export default function TermsOfService() {
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-yellow-400">⚠️</span>
-                  <span><strong>We can't catch everything:</strong> We're a small team. If you see something bad, REPORT IT. We can't moderate what we don't know about.</span>
+                  <span><strong>We can't catch everything:</strong> We're a small team. If you see something bad, REPORT IT. We can't see your chat unless you report it. We can't moderate what we don't know about.</span>
                 </li>
               </ul>
             </div>
@@ -154,7 +154,7 @@ export default function TermsOfService() {
                 <h3 className="text-lg font-bold text-orange-400 mb-2">We're Not Perfect</h3>
                 <p className="text-gray-300 text-sm">
                   Flip-FM is provided "as is." We do our best to keep it running smoothly, but bugs happen, servers go down, and things break. 
-                  We're not liable if you lose data, miss a message, or have a bad experience.
+                  We're not liable if you lose data, miss a message, or have a bad experience. But we do care, and we'll try to fix things as quickly as we can, and in case of data loss, we'll do our best to help you recover it if possible.
                 </p>
               </div>
               
@@ -163,14 +163,18 @@ export default function TermsOfService() {
                 <p className="text-gray-300 text-sm">
                   You interact with other real people on Flip-FM. We can't control what they say or do. 
                   If someone's being inappropriate, report them - but we're not responsible for user behavior. 
-                  Use common sense and stay safe.
+                  Be vigilant if someone's acting fishy and stay safe. And most importantly REPORT IT if you feel something is off.
                 </p>
               </div>
               
               <div>
                 <h3 className="text-lg font-bold text-orange-400 mb-2">Third-Party Links</h3>
                 <p className="text-gray-300 text-sm">
-                  We link to Spotify, Google, and other external sites. We're not responsible for what happens when you leave Flip-FM.
+                  We link to Spotify, Google, GitHub and other external sites. These are trusted services that promise to keep your data safe. But! if someone send you an external link be very cautious before clicking it, especially if it's from someone you don't know. We are not responsible for any content or actions on third-party sites.
+                  Bad actors may use<a href="https://www.freecodecamp.org/news/how-attackers-steal-data-from-websites-and-how-to-stop-them/" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline ml-1">
+                    phishing attacks
+                  </a> which can look like legit links but are designed to steal your info. Always double-check URLs and never enter your password on a site you don't trust, even if it looks like it's part of Flip-FM.
+                  
                 </p>
               </div>
             </div>
@@ -180,7 +184,7 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-3xl font-black uppercase tracking-tight mb-4">Deleting Your Account</h2>
             <p className="text-gray-300 leading-relaxed">
-              You can delete your account anytime (feature coming soon). When you delete your account:
+              You can delete your account anytime. When you delete your account:
             </p>
             <ul className="space-y-2 text-gray-300 mt-4">
               <li>• Your profile, albums, and bio are permanently deleted</li>
@@ -208,7 +212,7 @@ export default function TermsOfService() {
             <h2 className="text-3xl font-black uppercase tracking-tight mb-4">Legal Stuff</h2>
             <p className="text-gray-300 leading-relaxed text-sm">
               These terms are governed by German law (since that's where the developer is based). 
-              If we have a dispute, we'll try to work it out like adults before getting lawyers involved.
+              If we have a dispute, we'll try to work it out like adults before getting lawyers involved. Please keep in mind that this is a small passion project built by a solo indie developer, not a big corporation. We're just trying to build a fun music community, not make money or cause legal headaches. If you have concerns about these terms, please reach out to us.
             </p>
           </section>
 
@@ -219,7 +223,7 @@ export default function TermsOfService() {
               If something in here is confusing or you want to report a violation:
             </p>
             <p className="text-blue-400 mt-3">
-              📧 Email us: <a href="mailto:arpithbinsa@gmail.com" className="underline hover:text-blue-300">arpithbinsa@gmail.com</a>
+              📧 Email us: <a href="mailto:support@flip-fm.com" className="underline hover:text-blue-300">support@flip-fm.com</a>
             </p>
           </section>
 
