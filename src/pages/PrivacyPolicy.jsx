@@ -170,7 +170,7 @@ export default function PrivacyPolicy() {
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-yellow-400">⚠️</span>
-                  <span><strong>Your Safety:</strong> Don't share personal info (phone number, address, etc.) with strangers. <a href="https://www.freecodecamp.org/news/the-beginners-guide-to-online-privacy-7149b33c4a3e/" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline ml-1">
+                  <span><strong>Your Safety:</strong> Don't share personal info (phone number, address, etc.) with strangers.<a href="https://www.freecodecamp.org/news/the-beginners-guide-to-online-privacy-7149b33c4a3e/" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline ml-1">
                     Be safe on the Internet!
                   </a></span>
                 </li>
@@ -216,7 +216,7 @@ export default function PrivacyPolicy() {
               We're a small team and we actually read messages. If you have questions, concerns, or want to request your data:
             </p>
             <p className="text-blue-400 mt-3">
-              📧 Email us: <a href="mailto:arpithbinsa@gmail.com" className="underline hover:text-blue-300">arpithbinsa@gmail.com</a>
+              📧 Email us: <a href="mailto:support@flip-fm.com" className="underline hover:text-blue-300">support@flip-fm.com</a>
             </p>
           </section>
 
