@@ -23,7 +23,7 @@ export default function PrivacyPolicy() {
           {/* Intro */}
           <section>
             <p className="text-lg text-gray-300 leading-relaxed">
-              Hey there! 👋 We at FLip-FM value your privacy, we're a small music discovery community built by music lovers, for music lovers. 
+              Hey there! 👋 We at Flip-FM value your privacy, we're a small music discovery community built by music lovers, for music lovers. 
               We take your privacy seriously, but we also want to be upfront and honest about how everything works. 
               No corporate jargon.
             </p>
@@ -35,7 +35,7 @@ export default function PrivacyPolicy() {
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
               <div>
                 <h3 className="text-xl font-bold text-blue-400 mb-2">Account Info</h3>
-                <p className="text-gray-300">Your email address, username, password (encrypted!, We can't see this even if we tried, so keep it safe.), and bio. We need this to create your account and let you log in.</p>
+                <p className="text-gray-300">Your email address, username, password (encrypted! We can't see this even if we tried, so keep it safe.), and bio. We need this to create your account and let you log in.</p>
               </div>
               <div>
                 <h3 className="text-xl font-bold text-blue-400 mb-2">Your Music Taste</h3>
@@ -121,7 +121,7 @@ export default function PrivacyPolicy() {
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-green-400 text-xl">✓</span>
-                <span>We <strong>DON'T share your email</strong> with anyone other than moderators and admins inside FLip-FM (and only in a case of investigation).</span>
+                <span>We <strong>DON'T share your email</strong> with anyone. Moderators can only see it if you're reported for violating our rules.</span>
               </li>
             </ul>
           </section>
@@ -202,9 +202,9 @@ export default function PrivacyPolicy() {
               You're in control of your data. You can:
             </p>
             <ul className="space-y-2 text-gray-300">
-              <li>• <strong>Delete your account</strong> anytime from settings (coming soon)</li>
+              <li>• <strong>Delete your account</strong> anytime from settings. Once you delete your account all your data is permanently lost and we can't access it.</li>
               <li>• <strong>Change your info</strong> whenever you want</li>
-              <li>• <strong>Export your data</strong> by contacting us</li>
+              <li>• <strong>Export your data</strong> Contact us when your account is still live and we'll send you everything we have on you within 30 days.</li>
               <li>• <strong>Opt out of emails</strong> (except critical account stuff)</li>
             </ul>
           </section>
