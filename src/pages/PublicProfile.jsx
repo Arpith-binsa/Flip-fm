@@ -191,8 +191,8 @@ export default function PublicProfile() {
           })}
         </div>
         
-        {/* Profile Picture Overlay - Bottom Left */}
-        <div className="profile-pic absolute bottom-0 left-0 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-black bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden shadow-2xl transform translate-y-1/4 translate-x-[-0.5rem] transition-opacity duration-300 pointer-events-none">
+        {/* Profile Picture Overlay - Top Left */}
+        <div className="profile-pic absolute top-0 left-0 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-black bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden shadow-2xl transform -translate-y-1/4 translate-x-[-0.5rem] pointer-events-none">
           {profile?.avatar_url ? (
             <img src={profile.avatar_url} className="w-full h-full object-cover" alt={profile.username} />
           ) : (
