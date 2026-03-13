@@ -382,7 +382,7 @@ export default function MyProfile() {
         
           {/* 2x2 SQUARE GRID */}
           <div className="w-full max-w-[600px] mx-auto aspect-square relative">
-            <div className="grid grid-cols-2 gap-4 w-full h-full">
+            <div className="grid grid-cols-2 gap-4 w-full h-full has-[.bottom-left:hover]:[&_.profile-pic]:opacity-0">
             {[0, 1, 2, 3].map((slot) => {
               const vibe = myVibes.find(v => v.slot_number === slot);
               return (
@@ -391,7 +391,7 @@ export default function MyProfile() {
                   onClick={() => setActiveSlot(slot)}
                   className={`aspect-square rounded-2xl border-2 transition-all overflow-hidden flex items-center justify-center relative group ${
                     activeSlot === slot ? "border-blue-500 scale-105 shadow-[0_0_30px_rgba(59,130,246,0.2)]" : "border-white/5 hover:border-white/20"
-                  } ${slot === 2 ? 'peer' : ''}`}
+                  } ${slot === 2 ? 'bottom-left' : ''}`}
                 >
                   {vibe ? (
                     <>
@@ -442,7 +442,7 @@ export default function MyProfile() {
           </div>
           
           {/* Profile Picture Overlay - Bottom Left */}
-          <div className="absolute bottom-0 left-0 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-black bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden shadow-2xl transform translate-y-1/4 translate-x-[-0.5rem] transition-opacity duration-300 peer-hover:opacity-0 pointer-events-none">
+          <div className="profile-pic absolute bottom-0 left-0 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-black bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden shadow-2xl transform translate-y-1/4 translate-x-[-0.5rem] transition-opacity duration-300 pointer-events-none">
             {profile?.avatar_url ? (
               <img src={profile.avatar_url} className="w-full h-full object-cover" alt={profile.username} />
             ) : (
