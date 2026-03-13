@@ -133,12 +133,12 @@ export default function PublicProfile() {
       </div>
 
       {/* THEIR CRATE (2x2 Square Grid) */}
-      <div className="w-full max-w-[600px] mx-auto aspect-square relative">
+      <div className="w-full max-w-[600px] mx-auto aspect-square relative group/grid">
         <div className="grid grid-cols-2 gap-4 w-full h-full">
           {[0, 1, 2, 3].map((slot) => {
             const vibe = theirVibes.find(v => v.slot_number === slot);
             return (
-              <div key={slot} className={`aspect-square bg-[#111] rounded-2xl border ${theme.border} overflow-hidden relative group ${theme.glow}`}>
+              <div key={slot} className={`aspect-square bg-[#111] rounded-2xl border ${theme.border} overflow-hidden relative group ${theme.glow} ${slot === 2 ? 'group/bottomleft' : ''}`}>
                 {vibe ? (
                   <>
                     <img src={vibe.album_cover} alt={vibe.album_title} className="w-full h-full object-cover" />
@@ -186,7 +186,7 @@ export default function PublicProfile() {
         </div>
         
         {/* Profile Picture Overlay - Bottom Left */}
-        <div className="absolute bottom-0 left-0 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-black bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden shadow-2xl transform translate-y-1/4 translate-x-[-0.5rem]">
+        <div className="absolute bottom-0 left-0 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-black bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden shadow-2xl transform translate-y-1/4 translate-x-[-0.5rem] transition-opacity duration-300 group-hover/bottomleft:opacity-0">
           {profile?.avatar_url ? (
             <img src={profile.avatar_url} className="w-full h-full object-cover" alt={profile.username} />
           ) : (
