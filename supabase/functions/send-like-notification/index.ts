@@ -6,6 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const EMAIL_COOLDOWN_HOURS = 24;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -26,6 +28,27 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Check cooldown — only send email once every 24 hours per user
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("username, last_like_email_sent_at")
+      .eq("id", liked_user_id)
+      .single();
+
+    if (profile?.last_like_email_sent_at) {
+      const lastSent = new Date(profile.last_like_email_sent_at);
+      const hoursSince = (Date.now() - lastSent.getTime()) / (1000 * 60 * 60);
+      
+      if (hoursSince < EMAIL_COOLDOWN_HOURS) {
+        // Still in cooldown — skip email silently
+        return new Response(JSON.stringify({ success: true, skipped: true, reason: "cooldown" }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    // Get user email
     const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(liked_user_id);
     if (authError || !authUser?.user?.email) {
       return new Response(JSON.stringify({ error: "User not found" }), {
@@ -35,16 +58,10 @@ serve(async (req) => {
     }
 
     const email = authUser.user.email;
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("username")
-      .eq("id", liked_user_id)
-      .single();
-
     const username = profile?.username || "there";
     const profileUrl = `https://flip-fm.com/u/${username}`;
 
+    // Send email via Resend
     const resendRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -120,10 +137,17 @@ serve(async (req) => {
       });
     }
 
+    // Update the cooldown timestamp
+    await supabase
+      .from("profiles")
+      .update({ last_like_email_sent_at: new Date().toISOString() })
+      .eq("id", liked_user_id);
+
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
