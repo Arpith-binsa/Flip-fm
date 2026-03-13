@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../services/supabaseClient"; 
 import { musicService } from "../services/musicService"; 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { FaSpotify } from "react-icons/fa";
 import GoogleColorIcon from "../components/GoogleColorIcon";
 import Cropper from "react-easy-crop";
@@ -239,9 +239,20 @@ export default function MyProfile() {
         
         {/* HEADER */}
         <div className="flex justify-between items-center mb-12">
-          <div>
-            <h1 className="text-4xl font-black italic uppercase tracking-tighter">My Profile</h1>
-            <p className="text-gray-500 font-medium">Manage your identity and crate.</p>
+          <div className="flex items-center gap-6">
+            {/* Logo */}
+            <Link 
+              to="/dashboard" 
+              className="text-2xl font-black italic uppercase tracking-tighter hover:text-purple-400 transition-colors"
+            >
+              FLIP-FM
+            </Link>
+            
+            {/* Page Title */}
+            <div>
+              <h1 className="text-4xl font-black italic uppercase tracking-tighter">My Profile</h1>
+              <p className="text-gray-500 font-medium">Manage your identity and crate.</p>
+            </div>
           </div>
           <button 
             onClick={() => navigate('/dashboard')}
@@ -370,7 +381,7 @@ export default function MyProfile() {
           </div>
         
           {/* 2x2 SQUARE GRID */}
-          <div className="w-full max-w-[600px] mx-auto aspect-square relative">
+          <div className="w-full max-w-[600px] mx-auto aspect-square relative group/grid">
             <div className="grid grid-cols-2 gap-4 w-full h-full">
             {[0, 1, 2, 3].map((slot) => {
               const vibe = myVibes.find(v => v.slot_number === slot);
@@ -380,7 +391,7 @@ export default function MyProfile() {
                   onClick={() => setActiveSlot(slot)}
                   className={`aspect-square rounded-2xl border-2 transition-all overflow-hidden flex items-center justify-center relative group ${
                     activeSlot === slot ? "border-blue-500 scale-105 shadow-[0_0_30px_rgba(59,130,246,0.2)]" : "border-white/5 hover:border-white/20"
-                  }`}
+                  } ${slot === 2 ? 'group/bottomleft' : ''}`}
                 >
                   {vibe ? (
                     <>
@@ -431,7 +442,7 @@ export default function MyProfile() {
           </div>
           
           {/* Profile Picture Overlay - Bottom Left */}
-          <div className="absolute bottom-0 left-0 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-black bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden shadow-2xl transform translate-y-1/4 translate-x-[-0.5rem]">
+          <div className="absolute bottom-0 left-0 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-black bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden shadow-2xl transform translate-y-1/4 translate-x-[-0.5rem] transition-opacity duration-300 group-hover/bottomleft:opacity-0">
             {profile?.avatar_url ? (
               <img src={profile.avatar_url} className="w-full h-full object-cover" alt={profile.username} />
             ) : (
