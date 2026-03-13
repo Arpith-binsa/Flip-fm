@@ -133,8 +133,8 @@ export default function PublicProfile() {
       </div>
 
       {/* THEIR CRATE (2x2 Square Grid) */}
-      <div className="w-full max-w-[600px] mx-auto aspect-square relative">
-        <div className="grid grid-cols-2 gap-4 w-full h-full has-[.bottom-left:hover]:[&_.profile-pic]:opacity-0">
+      <div className="w-full max-w-[600px] mx-auto aspect-square relative has-[.bottom-left:hover]:[&_.profile-pic]:opacity-0">
+        <div className="grid grid-cols-2 gap-4 w-full h-full">
           {[0, 1, 2, 3].map((slot) => {
             const vibe = theirVibes.find(v => v.slot_number === slot);
             return (
