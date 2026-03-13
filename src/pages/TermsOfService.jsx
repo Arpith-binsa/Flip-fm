@@ -60,7 +60,7 @@ export default function TermsOfService() {
               <ul className="space-y-3 text-gray-300 text-sm">
                 <li className="flex items-start gap-3">
                   <span className="text-red-400 font-bold">•</span>
-                  <span><strong>Hate speech, racism, sexism, homophobia, transphobia</strong> - Instant ban. No warnings.</span>
+                  <span><strong>Hate speech, racism, sexism, homophobia, transphobia</strong> - Instant ban if reported. No warnings.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-red-400 font-bold">•</span>
@@ -68,7 +68,7 @@ export default function TermsOfService() {
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-red-400 font-bold">•</span>
-                  <span><strong>Sexual content or solicitation</strong> - This isn't a dating app. Try to keep it about music and keep it fun.</span>
+                  <span><strong>Sexual content or solicitation</strong> - This isn't a dating app. Try to keep it about music and keep it fun. If you happen to find your special someone on flip-fm we'll celebrate it with you. But please don't use it exclusively for dating.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-red-400 font-bold">•</span>
@@ -173,7 +173,7 @@ export default function TermsOfService() {
                   We link to Spotify, Google, GitHub and other external sites. These are trusted services that promise to keep your data safe. But! if someone send you an external link be very cautious before clicking it, especially if it's from someone you don't know. We are not responsible for any content or actions on third-party sites.
                   Bad actors may use<a href="https://www.freecodecamp.org/news/how-attackers-steal-data-from-websites-and-how-to-stop-them/" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline ml-1">
                     phishing attacks
-                  </a> which can look like legit links but are designed to steal your info. Always double-check URLs and never enter your password on a site you don't trust, even if it looks like it's part of Flip-FM.
+                  </a> - fake links designed to steal your info. Always double-check URLs before clicking. Never enter your password on a site you don't trust, even if it looks like Flip-FM.
                   
                 </p>
               </div>
