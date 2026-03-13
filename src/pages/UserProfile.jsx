@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "../services/supabaseClient"; 
 import { musicService } from "../services/musicService"; 
 import { useNavigate, Link } from "react-router-dom";
@@ -21,6 +21,7 @@ export default function MyProfile() {
   const [profile, setProfile] = useState(null); // User profile data
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
+  const profilePicRef = useRef(null);
   const [activeSlot, setActiveSlot] = useState(null);
   const [myVibes, setMyVibes] = useState([]);
   const [editMode, setEditMode] = useState(false); // Toggle edit mode
