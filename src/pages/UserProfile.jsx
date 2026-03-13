@@ -72,13 +72,13 @@ export default function UserProfile() {
 
         {/* THE 2X2 CRATE */}
         <div className="relative max-w-[600px] mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative group/grid">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
             {[0, 1, 2, 3].map((slot) => {
               const vibe = profile.vibes?.find((v) => v.slot_number === slot);
               return (
                 <div 
                   key={slot} 
-                  className={`aspect-square bg-zinc-900/50 rounded-[40px] border border-white/5 overflow-hidden relative group cursor-pointer ${slot === 2 ? 'group/bottomleft' : ''}`}
+                  className={`aspect-square bg-zinc-900/50 rounded-[40px] border border-white/5 overflow-hidden relative group cursor-pointer ${slot === 2 ? 'peer' : ''}`}
                   onClick={() => vibe && handleListen(vibe)}
                 >
                   {vibe ? (
@@ -109,7 +109,7 @@ export default function UserProfile() {
           </div>
           
           {/* Profile Picture Overlay - Bottom Left */}
-          <div className="absolute bottom-0 left-0 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-black bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden shadow-2xl transform translate-y-1/4 translate-x-[-0.5rem] transition-opacity duration-300 group-hover/bottomleft:opacity-0">
+          <div className="absolute bottom-0 left-0 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-black bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden shadow-2xl transform translate-y-1/4 translate-x-[-0.5rem] transition-opacity duration-300 peer-hover:opacity-0 pointer-events-none">
             {profile?.avatar_url ? (
               <img src={profile.avatar_url} className="w-full h-full object-cover" alt={profile.username} />
             ) : (
