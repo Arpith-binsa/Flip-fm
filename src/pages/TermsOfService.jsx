@@ -212,7 +212,7 @@ export default function TermsOfService() {
             <h2 className="text-3xl font-black uppercase tracking-tight mb-4">Legal Stuff</h2>
             <p className="text-gray-300 leading-relaxed text-sm">
               These terms are governed by German law (since that's where our developer and moderators are based). 
-              If we have a dispute, we'll try to work it out ourselevles before getting lawyers involved. Please keep in mind that this is a small passion project built by a solo indie developer, not a big corporation. We're just trying to build a fun music community, not make money or cause legal headaches. If you have concerns about these terms, please reach out to us.
+              If we have a dispute, we'll try to work it out ourselves before getting lawyers involved. Please keep in mind that this is a small passion project built by a solo indie developer, not a big corporation. We're just trying to build a fun music community, not make money or cause legal headaches. If you have concerns about these terms, please reach out to us.
             </p>
           </section>
 
