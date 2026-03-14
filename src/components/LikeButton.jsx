@@ -70,11 +70,14 @@ export default function LikeButton({ likedUserId, likedUsername }) {
         try {
           const { data: { session } } = await supabase.auth.getSession();
           await supabase.functions.invoke("send-like-notification", {
-          body: { liked_user_id: likedUserId },
-          headers: {
-            Authorization: `Bearer ${session?.access_token}`,
-          },
-        });
+            body: { 
+              liked_user_id: likedUserId,
+              liker_id: currentUserId,
+            },
+            headers: {
+              Authorization: `Bearer ${session?.access_token}`,
+            },
+         });
         } catch (err) {
           console.error("Like notification failed:", err);
         }
