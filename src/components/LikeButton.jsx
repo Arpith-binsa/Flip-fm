@@ -14,7 +14,6 @@ export default function LikeButton({ likedUserId, likedUsername }) {
       if (session) {
         setCurrentUserId(session.user.id);
 
-        // Check if current user already liked this profile
         const { data: existingLike } = await supabase
           .from("likes")
           .select("id")
@@ -25,7 +24,6 @@ export default function LikeButton({ likedUserId, likedUsername }) {
         setLiked(!!existingLike);
       }
 
-      // Get like count (public)
       const { count } = await supabase
         .from("likes")
         .select("*", { count: "exact", head: true })
@@ -38,14 +36,13 @@ export default function LikeButton({ likedUserId, likedUsername }) {
   }, [likedUserId]);
 
   const handleLike = async (e) => {
-    e.preventDefault(); // prevent navigating if inside a Link
+    e.preventDefault();
     e.stopPropagation();
     if (!currentUserId || loading || currentUserId === likedUserId) return;
 
     setLoading(true);
 
     if (liked) {
-      // Unlike
       const { error } = await supabase
         .from("likes")
         .delete()
@@ -57,7 +54,6 @@ export default function LikeButton({ likedUserId, likedUsername }) {
         setLikeCount((prev) => Math.max(0, prev - 1));
       }
     } else {
-      // Like
       const { error } = await supabase
         .from("likes")
         .insert({ liker_id: currentUserId, liked_id: likedUserId });
@@ -66,18 +62,17 @@ export default function LikeButton({ likedUserId, likedUsername }) {
         setLiked(true);
         setLikeCount((prev) => prev + 1);
 
-        // Fire email notification via Edge Function
         try {
           const { data: { session } } = await supabase.auth.getSession();
           await supabase.functions.invoke("send-like-notification", {
-            body: { 
+            body: {
               liked_user_id: likedUserId,
               liker_id: currentUserId,
             },
             headers: {
               Authorization: `Bearer ${session?.access_token}`,
             },
-         });
+          });
         } catch (err) {
           console.error("Like notification failed:", err);
         }
@@ -96,8 +91,8 @@ export default function LikeButton({ likedUserId, likedUsername }) {
       title={isOwnProfile ? "Can't like your own crate" : liked ? "Unlike" : "Like this crate"}
       className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all font-bold text-xs uppercase tracking-widest
         ${liked
-          ? "bg-pink-500/20 border-pink-500/40 text-pink-400 hover:bg-pink-500/30"
-          : "bg-white/5 border-white/10 text-gray-400 hover:border-pink-500/30 hover:text-pink-400"
+          ? "bg-red-500/20 border-red-500/40 text-red-400 hover:bg-red-500/30"
+          : "bg-white/5 border-white/10 text-gray-400 hover:border-red-500/30 hover:text-red-400"
         }
         disabled:opacity-40 disabled:cursor-not-allowed`}
     >

@@ -37,7 +37,7 @@ export default function Dashboard() {
 
       setMyVibes(myVibeData || []);
 
-      // Fetch who liked me (private — only I see this)
+      // Who liked me (private)
       const { data: likeData } = await supabase
         .from("likes")
         .select("liker_id, created_at, profiles!likes_liker_id_fkey(id, username, avatar_url)")
@@ -91,7 +91,6 @@ export default function Dashboard() {
 
       setSyncMatches(sync);
       setFlipsideMatches(flipside.slice(0, 15));
-
       setLoading(false);
     };
 
@@ -170,13 +169,13 @@ export default function Dashboard() {
 
       <div className="max-w-6xl mx-auto px-6 py-12">
 
-        {/* WHO LIKED YOU — private, only visible to you */}
+        {/* WHO LIKED YOU — private */}
         {whoLikedMe.length > 0 && (
           <section className="mb-16">
             <div className="mb-6 flex items-center gap-3">
               <h2 className="text-2xl font-black uppercase tracking-tighter">Who Liked Your Crate</h2>
-              <div className="px-3 py-1 bg-pink-500/20 border border-pink-500/30 rounded-full">
-                <span className="text-pink-400 text-[10px] font-black uppercase tracking-widest">
+              <div className="px-3 py-1 bg-red-500/20 border border-red-500/30 rounded-full">
+                <span className="text-red-400 text-[10px] font-black uppercase tracking-widest">
                   {whoLikedMe.length} {whoLikedMe.length === 1 ? "like" : "likes"}
                 </span>
               </div>
@@ -191,19 +190,19 @@ export default function Dashboard() {
                   <Link
                     key={like.liker_id}
                     to={`/u/${liker.username}`}
-                    className="flex items-center gap-3 bg-[#0a0a0a] border border-pink-500/20 hover:border-pink-500/50 rounded-2xl px-4 py-3 transition-all group"
+                    className="flex items-center gap-3 bg-[#0a0a0a] border border-red-500/20 hover:border-red-500/50 rounded-2xl px-4 py-3 transition-all group"
                   >
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 overflow-hidden flex items-center justify-center text-sm font-black flex-shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-red-500 to-orange-500 overflow-hidden flex items-center justify-center text-sm font-black flex-shrink-0">
                       {liker.avatar_url ? (
                         <img src={liker.avatar_url} className="w-full h-full object-cover" alt="" />
                       ) : (
                         liker.username?.[0]?.toUpperCase()
                       )}
                     </div>
-                    <span className="text-sm font-bold group-hover:text-pink-400 transition-colors">
+                    <span className="text-sm font-bold group-hover:text-red-400 transition-colors">
                       @{liker.username}
                     </span>
-                    <Heart size={12} className="text-pink-500" fill="currentColor" />
+                    <Heart size={12} className="text-red-500" fill="currentColor" />
                   </Link>
                 );
               })}
@@ -330,13 +329,10 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
-
                   <div className="flex flex-col items-end gap-3">
                     <div className="text-right">
                       <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Match</div>
-                      <div className="text-4xl font-black text-green-400">
-                        {user.matchScore}%
-                      </div>
+                      <div className="text-4xl font-black text-green-400">{user.matchScore}%</div>
                     </div>
                     <LikeButton likedUserId={user.id} likedUsername={user.username} />
                   </div>
@@ -394,13 +390,10 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
-
                   <div className="flex flex-col items-end gap-3">
                     <div className="text-right">
                       <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Match</div>
-                      <div className="text-4xl font-black text-orange-400">
-                        {user.matchScore}%
-                      </div>
+                      <div className="text-4xl font-black text-orange-400">{user.matchScore}%</div>
                     </div>
                     <LikeButton likedUserId={user.id} likedUsername={user.username} />
                   </div>

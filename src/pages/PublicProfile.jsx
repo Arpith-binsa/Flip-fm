@@ -142,8 +142,8 @@ export default function PublicProfile() {
 
         {/* Like count (public) */}
         {likeCount > 0 && (
-          <p className="text-xs text-gray-600 uppercase tracking-widest font-bold">
-            ♥ {likeCount} {likeCount === 1 ? "like" : "likes"}
+          <p className="text-xs text-red-500 uppercase tracking-widest font-bold">
+            ❤️ {likeCount} {likeCount === 1 ? "like" : "likes"}
           </p>
         )}
 
