@@ -6,7 +6,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const EMAIL_COOLDOWN_HOURS = 24;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -28,24 +27,6 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Check cooldown
-    const { data: likedProfile } = await supabase
-      .from("profiles")
-      .select("username, last_like_email_sent_at")
-      .eq("id", liked_user_id)
-      .single();
-
-    if (likedProfile?.last_like_email_sent_at) {
-      const lastSent = new Date(likedProfile.last_like_email_sent_at);
-      const hoursSince = (Date.now() - lastSent.getTime()) / (1000 * 60 * 60);
-      if (hoursSince < EMAIL_COOLDOWN_HOURS) {
-        return new Response(JSON.stringify({ success: true, skipped: true, reason: "cooldown" }), {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-    }
-
     // Get liked user's email
     const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(liked_user_id);
     if (authError || !authUser?.user?.email) {
@@ -59,10 +40,10 @@ serve(async (req) => {
     const likedUsername = likedProfile?.username || "there";
 
     // Get liker's profile
-    const { data: likerProfile } = await supabase
+    const { data: likedProfile } = await supabase
       .from("profiles")
-      .select("username, avatar_url")
-      .eq("id", liker_id)
+      .select("username")
+      .eq("id", liked_user_id)
       .single();
 
     const likerUsername = likerProfile?.username || "Someone";
@@ -187,12 +168,6 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    // Update cooldown timestamp
-    await supabase
-      .from("profiles")
-      .update({ last_like_email_sent_at: new Date().toISOString() })
-      .eq("id", liked_user_id);
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
