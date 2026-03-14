@@ -68,9 +68,13 @@ export default function LikeButton({ likedUserId, likedUsername }) {
 
         // Fire email notification via Edge Function
         try {
+          const { data: { session } } = await supabase.auth.getSession();
           await supabase.functions.invoke("send-like-notification", {
-            body: { liked_user_id: likedUserId },
-          });
+          body: { liked_user_id: likedUserId },
+          headers: {
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+        });
         } catch (err) {
           console.error("Like notification failed:", err);
         }
