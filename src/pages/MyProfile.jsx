@@ -7,7 +7,6 @@ import GoogleColorIcon from "../components/GoogleColorIcon";
 import Cropper from "react-easy-crop";
 import { X } from "lucide-react";
 
-// Helper function to create image element
 const createImage = (url) =>
   new Promise((resolve, reject) => {
     const image = new Image();
@@ -18,20 +17,23 @@ const createImage = (url) =>
 
 export default function MyProfile() {
   const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null); // User profile data
+  const [profile, setProfile] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
   const [activeSlot, setActiveSlot] = useState(null);
   const [myVibes, setMyVibes] = useState([]);
-  const [editMode, setEditMode] = useState(false); // Toggle edit mode
+  const [editMode, setEditMode] = useState(false);
   const [editedBio, setEditedBio] = useState("");
   const [editedUsername, setEditedUsername] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [imageToCrop, setImageToCrop] = useState(null); // Image selected for cropping
+  const [imageToCrop, setImageToCrop] = useState(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [showCropper, setShowCropper] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteRequested, setDeleteRequested] = useState(false);
+  const [deleteSending, setDeleteSending] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,7 +43,6 @@ export default function MyProfile() {
       
       setUser(authUser);
 
-      // Get profile data
       const { data: profileData } = await supabase
         .from("profiles")
         .select("*")
@@ -52,7 +53,6 @@ export default function MyProfile() {
       setEditedBio(profileData?.bio || "");
       setEditedUsername(profileData?.username || "");
 
-      // Get vibes
       const { data } = await supabase
         .from("vibes")
         .select("*")
@@ -84,18 +84,13 @@ export default function MyProfile() {
   };
 
   const handleImageSelect = (event) => {
-    if (!event.target.files || event.target.files.length === 0) {
-      return;
-    }
-
+    if (!event.target.files || event.target.files.length === 0) return;
     const file = event.target.files[0];
     const reader = new FileReader();
-    
     reader.onload = () => {
       setImageToCrop(reader.result);
       setShowCropper(true);
     };
-    
     reader.readAsDataURL(file);
   };
 
@@ -108,26 +103,20 @@ export default function MyProfile() {
       const image = await createImage(imageToCrop);
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-
       canvas.width = croppedAreaPixels.width;
       canvas.height = croppedAreaPixels.height;
-
       ctx.drawImage(
         image,
         croppedAreaPixels.x,
         croppedAreaPixels.y,
         croppedAreaPixels.width,
         croppedAreaPixels.height,
-        0,
-        0,
+        0, 0,
         croppedAreaPixels.width,
         croppedAreaPixels.height
       );
-
       return new Promise((resolve) => {
-        canvas.toBlob((blob) => {
-          resolve(blob);
-        }, 'image/jpeg', 0.95);
+        canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.95);
       });
     } catch (e) {
       console.error('Error creating cropped image:', e);
@@ -138,28 +127,22 @@ export default function MyProfile() {
   const handleUploadCroppedImage = async () => {
     try {
       setUploading(true);
-      
       const croppedBlob = await createCroppedImage();
-      if (!croppedBlob) {
-        throw new Error('Failed to crop image');
-      }
+      if (!croppedBlob) throw new Error('Failed to crop image');
 
       const fileName = `${user.id}-${Date.now()}.jpg`;
       const filePath = `avatars/${fileName}`;
 
-      // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('profile-pictures')
         .upload(filePath, croppedBlob);
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('profile-pictures')
         .getPublicUrl(filePath);
 
-      // Update profile with new avatar URL
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ avatar_url: publicUrl })
@@ -183,12 +166,11 @@ export default function MyProfile() {
     const delay = setTimeout(async () => {
       const albums = await musicService.searchAlbums(searchTerm);
       setResults(albums);
-    }, 400); 
+    }, 400);
     return () => clearTimeout(delay);
   }, [searchTerm]);
 
   const handleSelectAlbum = async (album) => {
-    // FIXED: Use optional chaining and explicit user.id check to stop the crash
     if (activeSlot === null || !user?.id) {
       console.error("User session not loaded yet or no slot selected.");
       return;
@@ -197,33 +179,30 @@ export default function MyProfile() {
     try {
       const genres = await musicService.getAlbumDetails(album.album_artist, album.album_title);
 
-      // FIXED: onConflict ensures you can overwrite existing slots
       const { error } = await supabase.from("vibes").upsert(
         {
-          user_id: user.id, // Correct path based on our state
+          user_id: user.id,
           slot_number: activeSlot,
           album_id: album.album_id,
           album_title: album.album_title,
           album_artist: album.album_artist,
           album_cover: album.album_cover,
-          album_genres: genres, 
+          album_genres: genres,
         },
         { onConflict: 'user_id, slot_number' }
       );
 
       if (!error) {
-        const newVibe = { 
-          ...album, 
-          slot_number: activeSlot, 
+        const newVibe = {
+          ...album,
+          slot_number: activeSlot,
           user_id: user.id,
-          album_genres: genres 
+          album_genres: genres
         };
-        
         setMyVibes(prev => [
-          ...prev.filter(v => v.slot_number !== activeSlot), 
+          ...prev.filter(v => v.slot_number !== activeSlot),
           newVibe
         ]);
-        
         setActiveSlot(null);
         setSearchTerm("");
         setResults([]);
@@ -233,28 +212,42 @@ export default function MyProfile() {
     }
   };
 
+  const handleDeleteRequest = async () => {
+    setDeleteSending(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      await supabase.functions.invoke("delete-account-request", {
+        body: { user_id: user.id },
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      setDeleteRequested(true);
+      setShowDeleteModal(false);
+    } catch (err) {
+      alert("Something went wrong. Email support@flip-fm.com directly.");
+    } finally {
+      setDeleteSending(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-4xl mx-auto">
-        
+
         {/* HEADER */}
         <div className="flex justify-between items-center mb-12">
           <div className="flex items-center gap-6">
-            {/* Logo */}
-            <Link 
-              to="/dashboard" 
+            <Link
+              to="/dashboard"
               className="text-2xl font-black italic uppercase tracking-tighter hover:text-purple-400 transition-colors"
             >
               FLIP-FM
             </Link>
-            
-            {/* Page Title */}
             <div>
               <h1 className="text-4xl font-black italic uppercase tracking-tighter">My Profile</h1>
               <p className="text-gray-500 font-medium">Manage your identity and crate.</p>
             </div>
           </div>
-          <button 
+          <button
             onClick={() => navigate('/dashboard')}
             className="text-xs font-bold uppercase tracking-widest px-6 py-3 border border-white/10 rounded-full hover:bg-white/5 transition-all"
           >
@@ -296,7 +289,7 @@ export default function MyProfile() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            
+
             {/* Profile Picture */}
             <div className="flex flex-col items-center">
               <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-4xl font-black uppercase overflow-hidden mb-4 relative group">
@@ -305,8 +298,6 @@ export default function MyProfile() {
                 ) : (
                   profile?.username?.[0] || "?"
                 )}
-                
-                {/* Upload overlay */}
                 {editMode && (
                   <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer flex items-center justify-center">
                     <span className="text-xs font-bold uppercase tracking-widest text-white">
@@ -327,7 +318,7 @@ export default function MyProfile() {
 
             {/* Username & Bio */}
             <div className="md:col-span-2 space-y-6">
-              
+
               {/* Username */}
               <div>
                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block">
@@ -369,6 +360,25 @@ export default function MyProfile() {
                   <p className="text-xs text-gray-500 mt-1">{editedBio.length}/200 characters</p>
                 )}
               </div>
+
+              {/* Delete Account */}
+              {editMode && (
+                <div className="pt-4 border-t border-white/5">
+                  {deleteRequested ? (
+                    <p className="text-xs text-green-500 uppercase tracking-widest font-bold">
+                      ✓ Request received — we'll process it within 24 hours
+                    </p>
+                  ) : (
+                    <button
+                      onClick={() => setShowDeleteModal(true)}
+                      className="text-xs font-bold uppercase tracking-widest text-red-500 hover:text-red-400 transition-colors"
+                    >
+                      Request Account Deletion
+                    </button>
+                  )}
+                </div>
+              )}
+
             </div>
           </div>
         </section>
@@ -379,104 +389,94 @@ export default function MyProfile() {
             <h2 className="text-2xl font-black uppercase tracking-tighter">Your Crate</h2>
             <p className="text-xs text-gray-500 uppercase tracking-widest">Click any album to change it</p>
           </div>
-        
+
           {/* 2x2 SQUARE GRID */}
           <div className="w-full max-w-[600px] mx-auto aspect-square relative">
             <div className="grid grid-cols-2 gap-4 w-full h-full has-[.bottom-left:hover]:[&_.profile-pic]:opacity-0">
-            {[0, 1, 2, 3].map((slot) => {
-              const vibe = myVibes.find(v => v.slot_number === slot);
-              return (
-                <button 
-                  key={slot}
-                  onClick={() => setActiveSlot(slot)}
-                  className={`aspect-square rounded-2xl border-2 transition-all overflow-hidden flex items-center justify-center relative group ${
-                    activeSlot === slot ? "border-blue-500 scale-105 shadow-[0_0_30px_rgba(59,130,246,0.2)]" : "border-white/5 hover:border-white/20"
-                  } ${slot === 2 ? 'bottom-left' : ''}`}
-                >
-                  {vibe ? (
-                    <>
-                      <img src={vibe.album_cover} className="w-full h-full object-cover" alt={vibe.album_title} />
-                      
-                      {/* Hover overlay with album info */}
-                      <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-4">
-                        {/* Top-right icons */}
-                        <div className="absolute top-2 right-2 flex gap-2">
-                          {/* Spotify Button */}
-                          <a
-                            href={`https://open.spotify.com/search/${encodeURIComponent(vibe.album_title + ' ' + vibe.album_artist)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-8 h-8 bg-[#1DB954] hover:bg-[#1ed760] rounded-full flex items-center justify-center transition-all shadow-lg z-10"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <FaSpotify size={18} className="text-white" />
-                          </a>
-                          
-                          {/* Google Search Button */}
-                          <a
-                            href={`https://www.google.com/search?q=${encodeURIComponent(vibe.album_title + ' ' + vibe.album_artist + ' album')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-8 h-8 bg-white hover:bg-gray-100 rounded-full flex items-center justify-center transition-all shadow-lg z-10"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <GoogleColorIcon size={16} />
-                          </a>
+              {[0, 1, 2, 3].map((slot) => {
+                const vibe = myVibes.find(v => v.slot_number === slot);
+                return (
+                  <button
+                    key={slot}
+                    onClick={() => setActiveSlot(slot)}
+                    className={`aspect-square rounded-2xl border-2 transition-all overflow-hidden flex items-center justify-center relative group ${
+                      activeSlot === slot ? "border-blue-500 scale-105 shadow-[0_0_30px_rgba(59,130,246,0.2)]" : "border-white/5 hover:border-white/20"
+                    } ${slot === 2 ? 'bottom-left' : ''}`}
+                  >
+                    {vibe ? (
+                      <>
+                        <img src={vibe.album_cover} className="w-full h-full object-cover" alt={vibe.album_title} />
+                        <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-4">
+                          <div className="absolute top-2 right-2 flex gap-2">
+                            <a
+                              href={`https://open.spotify.com/search/${encodeURIComponent(vibe.album_title + ' ' + vibe.album_artist)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-8 h-8 bg-[#1DB954] hover:bg-[#1ed760] rounded-full flex items-center justify-center transition-all shadow-lg z-10"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <FaSpotify size={18} className="text-white" />
+                            </a>
+                            <a
+                              href={`https://www.google.com/search?q=${encodeURIComponent(vibe.album_title + ' ' + vibe.album_artist + ' album')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-8 h-8 bg-white hover:bg-gray-100 rounded-full flex items-center justify-center transition-all shadow-lg z-10"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <GoogleColorIcon size={16} />
+                            </a>
+                          </div>
+                          <p className="text-sm font-bold text-center line-clamp-2 mb-1">{vibe.album_title}</p>
+                          <p className="text-xs text-gray-400 text-center line-clamp-1">{vibe.album_artist}</p>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-blue-400 mt-3">Click to Change</span>
                         </div>
-                        
-                        {/* Album info */}
-                        <p className="text-sm font-bold text-center line-clamp-2 mb-1">{vibe.album_title}</p>
-                        <p className="text-xs text-gray-400 text-center line-clamp-1">{vibe.album_artist}</p>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-400 mt-3">Click to Change</span>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center">
+                        <span className="text-6xl font-black text-white/10 group-hover:text-white/30 transition-colors">+</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-white/20 mt-2">Add Album</span>
                       </div>
-                    </>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center">
-                      <span className="text-6xl font-black text-white/10 group-hover:text-white/30 transition-colors">+</span>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-white/20 mt-2">Add Album</span>
-                    </div>
-                  )}
-                </button>
-              );
-            })}
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Profile Picture Overlay */}
+            <div className="profile-pic absolute top-0 left-0 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-black bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden shadow-2xl transform -translate-y-1/4 translate-x-[-0.5rem] pointer-events-none">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} className="w-full h-full object-cover" alt={profile.username} />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-2xl font-black text-white">
+                  {profile?.username?.[0]?.toUpperCase() || "?"}
+                </div>
+              )}
+            </div>
           </div>
-          
-          {/* Profile Picture Overlay - Top Left */}
-          <div className="profile-pic absolute top-0 left-0 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-black bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden shadow-2xl transform -translate-y-1/4 translate-x-[-0.5rem] pointer-events-none">
-            {profile?.avatar_url ? (
-              <img src={profile.avatar_url} className="w-full h-full object-cover" alt={profile.username} />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-2xl font-black text-white">
-                {profile?.username?.[0]?.toUpperCase() || "?"}
-              </div>
-            )}
-          </div>
-        </div>
         </section>
       </div>
 
       {/* SEARCH OVERLAY */}
       {activeSlot !== null && (
         <div className="fixed inset-0 bg-black/95 backdrop-blur-2xl z-50 p-6 flex flex-col items-center">
-          <button 
-            onClick={() => { setActiveSlot(null); setSearchTerm(""); }} 
+          <button
+            onClick={() => { setActiveSlot(null); setSearchTerm(""); }}
             className="absolute top-10 right-10 text-gray-500 hover:text-white text-xs font-black uppercase tracking-widest"
           >
             Cancel
           </button>
-          
-          <input 
+          <input
             autoFocus
             className="bg-transparent border-b-2 border-white/10 text-4xl md:text-6xl font-black w-full max-w-3xl py-8 focus:outline-none focus:border-blue-500 placeholder:text-white/5 mt-20 text-center"
             placeholder="TYPE ALBUM NAME..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-16 w-full max-w-3xl overflow-y-auto pb-20">
             {results.map(album => (
-              <div 
-                key={album.album_id} 
+              <div
+                key={album.album_id}
                 onClick={() => handleSelectAlbum(album)}
                 className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl hover:bg-blue-500/10 hover:border-blue-500/50 border border-transparent transition-all cursor-pointer group"
               >
@@ -491,10 +491,46 @@ export default function MyProfile() {
         </div>
       )}
 
+      {/* DELETE ACCOUNT CONFIRMATION MODAL */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[100] flex items-center justify-center p-6">
+          <div className="max-w-md w-full bg-[#111] border border-red-500/30 rounded-3xl p-8 relative">
+            <button
+              onClick={() => setShowDeleteModal(false)}
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all"
+            >
+              <X size={20} />
+            </button>
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-black uppercase tracking-tighter text-red-500">Delete Account</h2>
+                <p className="text-gray-500 text-sm mt-2 leading-relaxed">
+                  Are you sure? This will permanently delete your profile, crate, and all your data. This cannot be undone.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="flex-1 text-xs font-bold uppercase tracking-widest px-6 py-4 border border-white/10 rounded-full hover:bg-white/5 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteRequest}
+                  disabled={deleteSending}
+                  className="flex-1 text-xs font-bold uppercase tracking-widest px-6 py-4 bg-red-600 hover:bg-red-500 rounded-full transition-all disabled:opacity-50"
+                >
+                  {deleteSending ? "Sending..." : "Yes, Delete My Account"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* IMAGE CROPPER MODAL */}
       {showCropper && imageToCrop && (
         <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[100] flex flex-col">
-          {/* Header */}
           <div className="p-6 flex justify-between items-center border-b border-white/10">
             <h2 className="text-2xl font-black uppercase tracking-tighter">Crop Your Photo</h2>
             <button
@@ -507,8 +543,6 @@ export default function MyProfile() {
               <X size={20} />
             </button>
           </div>
-
-          {/* Cropper Area */}
           <div className="flex-1 relative">
             <Cropper
               image={imageToCrop}
@@ -522,10 +556,7 @@ export default function MyProfile() {
               onCropComplete={onCropComplete}
             />
           </div>
-
-          {/* Controls */}
           <div className="p-6 border-t border-white/10 space-y-4">
-            {/* Zoom Slider */}
             <div className="max-w-md mx-auto">
               <label className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 block">
                 Zoom
@@ -540,8 +571,6 @@ export default function MyProfile() {
                 className="w-full"
               />
             </div>
-
-            {/* Action Buttons */}
             <div className="flex gap-4 max-w-md mx-auto">
               <button
                 onClick={() => {
