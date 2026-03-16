@@ -33,7 +33,7 @@ export default function Onboarding() {
     if (!error) {
        console.log("Profile updated successfully!");
        // Force a hard redirect to the dashboard to refresh the app state
-       window.location.href = "/dashboard";
+       window.location.href = "/tutorial";
     } else {
        console.error("Supabase Database Error:", error);
        alert("Error saving profile: " + error.message);
