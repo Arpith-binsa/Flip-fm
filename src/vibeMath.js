@@ -24,14 +24,12 @@ export function calculateVibeMatch(myVibes, theirVibes) {
   // 2. CALCULATE MATCHES WITH WEIGHTED SCORING
 
   // A. EXACT ALBUM MATCH (Highest weight - 25 points each)
-  // If you both have the exact same album, that's the strongest signal
   const sharedAlbums = myAlbums.filter(id => theirAlbums.includes(id));
   const albumMatchScore = sharedAlbums.length * 25;
   score += albumMatchScore;
-  maxPossibleScore += 25 * 4; // Max 4 albums could match
+  maxPossibleScore += 25 * 4; 
 
   // B. SHARED ARTIST (Strong signal - 12 points each unique artist)
-  // Using Sets to avoid counting same artist multiple times
   const uniqueMyArtists = [...new Set(myArtists)];
   const uniqueTheirArtists = [...new Set(theirArtists)];
   const sharedArtists = uniqueMyArtists.filter(artist => 
@@ -41,10 +39,9 @@ export function calculateVibeMatch(myVibes, theirVibes) {
   );
   const artistMatchScore = sharedArtists.length * 12;
   score += artistMatchScore;
-  maxPossibleScore += 12 * 4; // Max 4 unique artists
+  maxPossibleScore += 12 * 4; 
 
   // C. MULTIPLE ALBUMS FROM SAME ARTIST (Bonus - 5 points)
-  // If you both have multiple albums from the same artist, you're both fans
   const myArtistCounts = myArtists.reduce((acc, artist) => {
     acc[artist.toLowerCase()] = (acc[artist.toLowerCase()] || 0) + 1;
     return acc;
@@ -62,31 +59,29 @@ export function calculateVibeMatch(myVibes, theirVibes) {
     }
   });
   score += deepArtistFanBonus;
-  maxPossibleScore += 10; // Max bonus
+  maxPossibleScore += 10; 
 
   // D. GENRE OVERLAP (Medium signal)
-  // Calculate both count and percentage overlap
   const uniqueMyGenres = [...new Set(myGenres.map(g => g.toLowerCase()))];
   const uniqueTheirGenres = [...new Set(theirGenres.map(g => g.toLowerCase()))];
   
   const sharedGenres = uniqueMyGenres.filter(g => uniqueTheirGenres.includes(g));
-  const genreCountScore = sharedGenres.length * 3; // 3 points per shared genre
+  const genreCountScore = sharedGenres.length * 3; 
   
   // Genre overlap percentage (if you both have similar genre diversity)
   const totalUniqueGenres = new Set([...uniqueMyGenres, ...uniqueTheirGenres]).size;
   const genreOverlapPercent = totalUniqueGenres > 0 
     ? (sharedGenres.length / totalUniqueGenres) * 100 
     : 0;
-  const genreOverlapScore = genreOverlapPercent * 0.2; // Up to 20 points for 100% overlap
+  const genreOverlapScore = genreOverlapPercent * 0.2;
   
   score += genreCountScore + genreOverlapScore;
-  maxPossibleScore += 50; // Genre matching can add significant score
+  maxPossibleScore += 50; 
 
   // E. SIMILAR ALBUM TITLES (Weak signal - 3 points)
-  // Different albums but similar naming patterns (live albums, greatest hits, etc.)
   const similarTitlePatterns = myAlbumTitles.filter(myTitle => 
     theirAlbumTitles.some(theirTitle => {
-      // Check for similar patterns
+
       const patterns = ['live', 'greatest hits', 'best of', 'deluxe', 'remastered', 'acoustic'];
       return patterns.some(pattern => myTitle.includes(pattern) && theirTitle.includes(pattern));
     })
@@ -96,7 +91,6 @@ export function calculateVibeMatch(myVibes, theirVibes) {
   maxPossibleScore += 10;
 
   // F. ARTIST DIVERSITY SIMILARITY (Bonus for similar taste breadth)
-  // If you both like 4 different artists vs both liking same artist 4 times
   const myArtistDiversity = uniqueMyArtists.length;
   const theirArtistDiversity = uniqueTheirArtists.length;
   const diversityDiff = Math.abs(myArtistDiversity - theirArtistDiversity);
@@ -110,8 +104,6 @@ export function calculateVibeMatch(myVibes, theirVibes) {
     ? (score / maxPossibleScore) * 100 
     : 0;
 
-  // Apply sigmoid curve for better distribution
-  // This prevents too many 0% or 100% matches
   const normalizedScore = Math.round(
     100 / (1 + Math.exp(-0.08 * (rawPercentage - 50)))
   );

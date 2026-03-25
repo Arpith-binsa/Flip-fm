@@ -131,7 +131,7 @@ export default function PrivacyPolicy() {
             <h2 className="text-3xl font-black uppercase tracking-tight mb-4">What's Public vs Private</h2>
             <div className="grid md:grid-cols-2 gap-6">
               <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-5">
-                <h3 className="text-lg font-bold text-orange-400 mb-3">👁️ Public (Everyone Can See)</h3>
+                <h3 className="text-lg font-bold text-orange-400 mb-3"> Public (Everyone Can See)</h3>
                 <ul className="space-y-2 text-sm text-gray-300">
                   <li>• Your username</li>
                   <li>• Your 4 albums</li>
@@ -142,7 +142,7 @@ export default function PrivacyPolicy() {
               </div>
               
               <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-5">
-                <h3 className="text-lg font-bold text-purple-400 mb-3">🔒 Private (Only You See)</h3>
+                <h3 className="text-lg font-bold text-purple-400 mb-3">Private (Only You See)</h3>
                 <ul className="space-y-2 text-sm text-gray-300">
                   <li>• Your email address (unless reported)</li>
                   <li>• Your password (encrypted)</li>

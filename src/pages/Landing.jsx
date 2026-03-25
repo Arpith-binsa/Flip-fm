@@ -1,13 +1,11 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
-// --- ANIMATION VARIANTS ---
 const fadeUp = {
   hidden: { opacity: 0, y: 50 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
 };
 
-// --- MOCK DATA ---
 const DEMO_ALBUM = "https://upload.wikimedia.org/wikipedia/en/3/3b/Dark_Side_of_the_Moon.png"; 
 
 export default function Landing() {
@@ -109,7 +107,7 @@ export default function Landing() {
                         animate={{ opacity: [0, 0, 1, 1, 0] }} 
                         transition={{ 
                           duration: 6, 
-                          times: [0, 0.49, 0.50, 0.95, 1], // Instantly appears at 50%
+                          times: [0, 0.49, 0.50, 0.95, 1], 
                           repeat: Infinity,
                           ease: "linear"
                         }}
@@ -126,7 +124,7 @@ export default function Landing() {
                 animate={{ opacity: [0, 0, 1, 1, 0, 0] }}
                 transition={{ 
                   duration: 6, 
-                  times: [0, 0.24, 0.25, 0.49, 0.50, 1], // Appears at 25% (1.5s), Vanishes at 50% (3.0s)
+                  times: [0, 0.24, 0.25, 0.49, 0.50, 1], 
                   repeat: Infinity,
                   ease: "linear"
                 }}
@@ -144,21 +142,21 @@ export default function Landing() {
                 animate={{
                   x: [20, 40, 40, 40, 180, 180, 180, 20, 20],   
                   y: [300, 40, 40, 40, 180, 180, 180, 300, 300], 
-                  scale: [1, 1, 0.8, 1, 1, 0.8, 1, 1, 1],   // The physical "click" down
+                  scale: [1, 1, 0.8, 1, 1, 0.8, 1, 1, 1],  
                 }}
                 transition={{
                   duration: 6,
                   ease: "easeInOut",
                   times: [
-                    0,     // 0.0s: Start away
-                    0.17,  // 1.0s: Arrive at Slot 1
-                    0.20,  // 1.2s: PRESS down on Slot 1
-                    0.25,  // 1.5s: RELEASE Slot 1 (Popup appears exactly here)
-                    0.40,  // 2.4s: Arrive at Popup
-                    0.43,  // 2.6s: PRESS down on Popup
-                    0.50,  // 3.0s: RELEASE Popup (Popup vanishes & Crate fills exactly here)
-                    0.60,  // 3.6s: Move away
-                    1      // 6.0s: Loop
+                    0,     
+                    0.17,  
+                    0.20,  
+                    0.25,  
+                    0.40,  
+                    0.43,  
+                    0.50,  
+                    0.60,  
+                    1      
                   ], 
                   repeat: Infinity,
                 }}
@@ -174,7 +172,6 @@ export default function Landing() {
       </section>
 
 
-      {/* --- THE TRADEMARK "FLIPSIDE" --- */}
       <section className="py-40 px-6 bg-white text-black relative">
         <div className="max-w-6xl mx-auto text-center">
             <span className="px-4 py-2 border-2 border-black rounded-full text-xs font-black uppercase tracking-widest mb-6 inline-block cursor-default">
@@ -202,7 +199,6 @@ export default function Landing() {
       </section>
 
 
-      {/* --- CTA FOOTER --- */}
       <section className="h-[60vh] flex flex-col items-center justify-center bg-black text-white border-t border-white/10">
         <h2 className="text-5xl md:text-8xl font-black italic uppercase tracking-tighter mb-12 text-center">
           Flip the Record.
