@@ -464,7 +464,7 @@ export default function Dashboard() {
               onClick={() => setShowEasterEgg(false)}
               className="text-2xl text-red-500 hover:text-red-400 transition-colors"
             >
-              ♥
+              🫶🏻
             </button>
           </div>
         </div>
