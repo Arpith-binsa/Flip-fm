@@ -6,6 +6,7 @@ import { Settings, Sparkles, X, Heart } from "lucide-react";
 import { FaSpotify } from "react-icons/fa";
 import GoogleColorIcon from "../components/GoogleColorIcon";
 import LikeButton from "../components/LikeButton";
+import bartGif from "../assets/Bart Simpson Dancing GIF.gif";
 
 export default function Dashboard() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -15,6 +16,7 @@ export default function Dashboard() {
   const [whoLikedMe, setWhoLikedMe] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showLuckyModal, setShowLuckyModal] = useState(false);
+  const [showEasterEgg, setShowEasterEgg] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,7 +39,11 @@ export default function Dashboard() {
 
       setMyVibes(myVibeData || []);
 
-      // Who liked me (private)
+      const hasEminem = (myVibeData || []).some(v =>
+        v.album_artist?.toLowerCase().includes("eminem")
+      );
+      if (hasEminem) setShowEasterEgg(true);
+
       const { data: likeData } = await supabase
         .from("likes")
         .select("liker_id, created_at, profiles!likes_liker_id_fkey(id, username, avatar_url)")
@@ -169,7 +175,6 @@ export default function Dashboard() {
 
       <div className="max-w-6xl mx-auto px-6 py-12">
 
-        {/* WHO LIKED YOU — private */}
         {whoLikedMe.length > 0 && (
           <section className="mb-16">
             <div className="mb-6 flex items-center gap-3">
@@ -210,7 +215,6 @@ export default function Dashboard() {
           </section>
         )}
 
-        {/* YOUR 4 ALBUMS PREVIEW */}
         <section className="mb-16">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-black uppercase tracking-tighter">Your Identity</h2>
@@ -268,7 +272,6 @@ export default function Dashboard() {
               })}
             </div>
 
-            {/* Profile Picture Overlay */}
             <div className="absolute bottom-0 left-0 w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-black bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden shadow-2xl transform translate-y-1/4 translate-x-[-0.5rem]">
               {currentUser?.avatar_url ? (
                 <img src={currentUser.avatar_url} className="w-full h-full object-cover" alt={currentUser.username} />
@@ -281,7 +284,6 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* SYNC MATCHES */}
         <section className="mb-16">
           <div className="mb-6">
             <div className="flex items-center gap-3 mb-2">
@@ -342,7 +344,6 @@ export default function Dashboard() {
           )}
         </section>
 
-        {/* FLIPSIDE MATCHES */}
         <section>
           <div className="mb-6">
             <div className="flex items-center gap-3 mb-2">
@@ -443,6 +444,32 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Easter egg for Marja */}
+      {showEasterEgg && (
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[200] flex items-center justify-center p-6">
+          <div className="max-w-md w-full bg-[#0a0a0a] border border-white/10 rounded-3xl p-10 relative text-center space-y-6">
+            <img
+              src={bartGif}
+              alt=""
+              className="w-24 h-24 mx-auto rounded-2xl object-cover"
+            />
+            <p className="text-xs uppercase tracking-widest text-gray-500 font-bold">
+              Buorre beaivi Marja
+            </p>
+            <p className="text-white text-lg leading-relaxed font-medium">
+              Buorre beaivi Marja, giitu go veahkehat mu buot áššiin, dieđe álo ahte leat čeahppi ja dieđe ahte it leat goassege okto
+            </p>
+            <button
+              onClick={() => setShowEasterEgg(false)}
+              className="text-2xl text-red-500 hover:text-red-400 transition-colors"
+            >
+              ♥
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
