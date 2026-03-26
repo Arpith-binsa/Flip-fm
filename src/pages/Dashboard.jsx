@@ -447,8 +447,10 @@ export default function Dashboard() {
       )}
       {/* Easter egg  */}
       {showEasterEgg && (
-        <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[200] flex items-center justify-center p-6">
-          <div className="max-w-md w-full bg-[#0a0a0a] border border-white/10 rounded-3xl p-10 relative text-center space-y-6">
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[200] flex items-center justify-center p-6"
+        onClick={() => setShowEasterEgg(false)} >
+          <div className="max-w-md w-full bg-[#0a0a0a] border border-white/10 rounded-3xl p-10 relative text-center space-y-6"
+          onClick={(e) => e.stopPropagation()} >
             <img
               src={bartGif}
               alt=""
