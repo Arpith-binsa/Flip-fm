@@ -1,0 +1,48 @@
+/**
+ * UI translations for IlluPia.
+ * Two languages: English (en) and Northern Sámi (se).
+ */
+export const TRANSLATIONS = {
+  en: {
+    connect: 'Connect',
+    paste: 'Paste',
+    convert: 'Convert',
+    matched: 'Matched',
+    missed: 'Missed',
+    open: 'Open playlist',
+    again: 'Convert another',
+    loading: 'Loading…',
+    searching: 'Searching…',
+    creating: 'Creating…',
+    done: 'Done ✓',
+    ratelimit: 'Slow down',
+    autherror: 'Auth failed',
+    urlerror: 'Invalid URL',
+    needboth: 'Connect both accounts first',
+    noenv: 'Missing client ID — check .env',
+    disconnect: 'Disconnect',
+    illuSub: 'YouTube → Spotify',
+    piaSub: 'Spotify → YouTube',
+  },
+  se: {
+    connect: 'Čatnat',
+    paste: 'Liige',
+    convert: 'Nuppástit',
+    matched: 'Gávdnon',
+    missed: 'Váilu',
+    open: 'Rahpat listta',
+    again: 'Nuppástit eará',
+    loading: 'Loahpaha…',
+    searching: 'Ohcan…',
+    creating: 'Ráhkadan…',
+    done: 'Gárvvis ✓',
+    ratelimit: 'Vuordit veahá',
+    autherror: 'Čatnamat ii leat',
+    urlerror: 'URL ii leat buorre',
+    needboth: 'Čatnat goappašat',
+    noenv: 'Lasit Client ID',
+    disconnect: 'Čuohcat',
+    illuSub: 'YouTube → Spotify',
+    piaSub: 'Spotify → YouTube',
+  },
+};
