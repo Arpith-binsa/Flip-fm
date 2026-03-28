@@ -14,6 +14,7 @@ import Tutorial from "./Tutorial";
 import MyProfile from "./MyProfile";
 import PrivacyPolicy from "./PrivacyPolicy";
 import TermsOfService from "./TermsOfService";
+import Bridge from '../bridge/Bridge';
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -65,6 +66,8 @@ export default function App() {
         <Route path="/u/:username" element={<PublicProfile />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
+        {/* IlluPia — standalone playlist converter, no auth required */}
+        <Route path="/bridge" element={<Bridge />} />
       </Routes>
     </Router>
   );
