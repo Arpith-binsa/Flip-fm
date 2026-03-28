@@ -287,7 +287,7 @@ export default function Bridge() {
           setSpToken(result.accessToken);
           setSpUser(result.user);
         })
-        .catch(() => showToast(t('autherror')));
+        .catch((err) => { console.error('[bridge] spotify auth error:', err); showToast(t('autherror')); });
       return;
     }
 
@@ -298,7 +298,7 @@ export default function Bridge() {
           setGgToken(result.accessToken);
           setGgUser(result.user);
         })
-        .catch(() => showToast(t('autherror')));
+        .catch((err) => { console.error('[bridge] google auth error:', err); showToast(t('autherror')); });
       return;
     }
 
