@@ -257,8 +257,8 @@ export default function Bridge() {
 
   // Validate env vars
   useEffect(() => {
-    if (!SP_ID || SP_ID === 'your_spotify_client_id_here') showToast('Missing Spotify client ID');
-    if (!GG_ID || GG_ID === 'your_google_client_id_here') showToast('Missing Google client ID');
+    if (!SP_ID || SP_ID === '047102d982d948d2bcb8fee4b1b8bcc1') showToast('Missing Spotify client ID');
+    if (!GG_ID || GG_ID === '440005728964-0qvm4og35lo7nh06ourmlrptqvfdls1v.apps.googleusercontent.com') showToast('Missing Google client ID');
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Restore tokens + handle OAuth callback + silent refresh
