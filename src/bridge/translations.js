@@ -27,7 +27,7 @@ export const TRANSLATIONS = {
   se: {
     connect: 'Čatnat',
     paste: 'Liige',
-    convert: 'Nuppástit',
+    convert: 'Konvert',
     matched: 'Gávdnon',
     missed: 'Váilu',
     open: 'Rahpat listta',
