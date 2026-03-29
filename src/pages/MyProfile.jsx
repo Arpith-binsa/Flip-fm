@@ -36,6 +36,11 @@ export default function MyProfile() {
   const [deleteSending, setDeleteSending] = useState(false);
   const navigate = useNavigate();
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/login");
+  };
+
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { user: authUser } } = await supabase.auth.getUser();
@@ -247,12 +252,20 @@ export default function MyProfile() {
               <p className="text-gray-500 font-medium">Manage your identity and crate.</p>
             </div>
           </div>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="text-xs font-bold uppercase tracking-widest px-6 py-3 border border-white/10 rounded-full hover:bg-white/5 transition-all"
-          >
-            Back to Dashboard
-          </button>
+          <div className="flex gap-2 items-center">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="text-xs font-bold uppercase tracking-widest px-6 py-3 border border-white/10 rounded-full hover:bg-white/5 transition-all"
+            >
+              Back to Dashboard
+            </button>
+            <button
+              onClick={handleLogout}
+              className="text-xs font-bold uppercase tracking-widest px-4 py-3 text-gray-400 hover:text-red-400 border border-white/10 rounded-full hover:bg-white/5 transition-all"
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
 
         {/* PROFILE DETAILS SECTION */}
