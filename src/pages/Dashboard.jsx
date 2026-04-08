@@ -445,35 +445,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-      {/* Easter egg  */}
-      {showEasterEgg && (
-        <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[200] flex items-center justify-center p-6"
-        onClick={() => setShowEasterEgg(false)} >
-          <div className="max-w-md w-full bg-[#0a0a0a] border border-white/10 rounded-3xl p-10 relative text-center space-y-6"
-          onClick={(e) => e.stopPropagation()} >
-            <img
-              src={bartGif}
-              alt=""
-              className="w-24 h-24 mx-auto rounded-2xl object-cover"
-            />
-            <p className="text-xs uppercase tracking-widest text-gray-500 font-bold">
-              Buorre beaivi Marja
-            </p>
-            <p className="text-white text-lg leading-relaxed font-medium">
-              Buorre beaivi Marja, giitu go veahkehat mu buot áššiin, dieđe álo ahte leat čeahppi ja dieđe ahte it leat goassege okto
-            </p>
-            <button
-              onClick={() => setShowEasterEgg(false)}
-              className="text-2xl text-red-500 hover:text-red-400 transition-colors"
-            >
-              🫶🏻
-            </button>
-          </div>
-        </div>
-      )}
-
-      
-
     </div>
   );
 }
