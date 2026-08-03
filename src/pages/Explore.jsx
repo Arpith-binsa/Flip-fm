@@ -60,7 +60,7 @@ export default function Explore() {
             FLIP-FM
           </Link>
         </div>
-        <h1 className="text-6xl font-black italic tracking-tighter uppercase leading-none">Explore</h1>
+        <h1 className="text-4xl sm:text-6xl font-black italic tracking-tighter uppercase leading-none">Explore</h1>
         <p className="text-gray-500 font-bold uppercase tracking-widest text-xs mt-2">Find your musical soulmates</p>
       </header>
 
@@ -69,21 +69,21 @@ export default function Explore() {
           <div key={user.id} className="relative group">
             <Link
               to={`/u/${user.username}`}
-              className="flex items-center justify-between bg-[#0a0a0a] border border-white/5 p-6 rounded-3xl hover:bg-white/5 transition-all hover:scale-[1.01] block"
+              className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 sm:gap-0 bg-[#0a0a0a] border border-white/5 p-4 sm:p-6 rounded-3xl hover:bg-white/5 transition-all hover:scale-[1.01] block"
             >
-              <div className="flex items-center gap-6">
-                <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-2xl font-black italic uppercase overflow-hidden">
+              <div className="flex items-center gap-4 sm:gap-6 min-w-0">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0 bg-blue-600 rounded-2xl flex items-center justify-center text-lg sm:text-2xl font-black italic uppercase overflow-hidden">
                   {user.avatar_url ? (
                     <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
                   ) : (
                     user.username?.[0]
                   )}
                 </div>
-                <div>
-                  <h2 className="text-2xl font-black tracking-tighter uppercase group-hover:text-blue-500 transition-colors">
+                <div className="min-w-0">
+                  <h2 className="text-lg sm:text-2xl font-black tracking-tighter uppercase group-hover:text-blue-500 transition-colors truncate">
                     @{user.username}
                   </h2>
-                  <div className="grid grid-cols-2 gap-1 mt-2 w-16 h-16">
+                  <div className="grid grid-cols-2 gap-1 mt-2 w-12 h-12 sm:w-16 sm:h-16">
                     {user.vibes?.slice(0, 4).map((v, i) => (
                       <div key={i} className="w-full h-full rounded-sm overflow-hidden border border-white/5">
                         <img src={v.album_cover} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" alt="" />
@@ -93,10 +93,10 @@ export default function Explore() {
                 </div>
               </div>
 
-              <div className="flex flex-col items-end gap-3">
-                <div className="text-right">
-                  <div className="text-sm font-bold uppercase tracking-widest text-gray-500 mb-1">Match</div>
-                  <div className={`text-4xl font-black italic leading-none ${user.matchScore > 70 ? "text-green-400" : "text-white"}`}>
+              <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-3 pl-16 sm:pl-0">
+                <div className="text-left sm:text-right">
+                  <div className="text-xs sm:text-sm font-bold uppercase tracking-widest text-gray-500 mb-1">Match</div>
+                  <div className={`text-2xl sm:text-4xl font-black italic leading-none ${user.matchScore > 70 ? "text-green-400" : "text-white"}`}>
                     {user.matchScore}%
                   </div>
                 </div>
