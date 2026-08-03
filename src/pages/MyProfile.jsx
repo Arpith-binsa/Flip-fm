@@ -34,6 +34,8 @@ export default function MyProfile() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteRequested, setDeleteRequested] = useState(false);
   const [deleteSending, setDeleteSending] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -63,6 +65,19 @@ export default function MyProfile() {
         .select("*")
         .eq("user_id", authUser.id);
       setMyVibes(data || []);
+
+      const { count: followers } = await supabase
+        .from("follows")
+        .select("*", { count: "exact", head: true })
+        .eq("following_id", authUser.id);
+
+      const { count: followingTotal } = await supabase
+        .from("follows")
+        .select("*", { count: "exact", head: true })
+        .eq("follower_id", authUser.id);
+
+      setFollowerCount(followers || 0);
+      setFollowingCount(followingTotal || 0);
     };
     checkAuth();
   }, [navigate]);
@@ -351,6 +366,10 @@ export default function MyProfile() {
                 {editMode && (
                   <p className="text-xs text-yellow-500 mt-1">⚠️ Changing username will affect your profile URL</p>
                 )}
+                <div className="flex gap-4 mt-2 text-xs text-gray-400 uppercase tracking-widest font-bold">
+                  <span>{followerCount} {followerCount === 1 ? "Follower" : "Followers"}</span>
+                  <span>{followingCount} Following</span>
+                </div>
               </div>
 
               {/* Bio */}
