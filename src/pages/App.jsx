@@ -8,7 +8,6 @@ import Onboarding from "./Onboarding";
 import Login from "../components/Login"; 
 import SignUp from "./SignUp";           
 import PublicProfile from "./PublicProfile";
-import UserProfile from "./UserProfile";
 import Explore from "./Explore";
 import Tutorial from "./Tutorial";
 import MyProfile from "./MyProfile";
