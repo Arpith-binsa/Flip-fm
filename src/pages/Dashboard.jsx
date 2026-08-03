@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [syncMatches, setSyncMatches] = useState([]);
   const [flipsideMatches, setFlipsideMatches] = useState([]);
   const [whoLikedMe, setWhoLikedMe] = useState([]);
+  const [followingFeed, setFollowingFeed] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showLuckyModal, setShowLuckyModal] = useState(false);
   const [showEasterEgg, setShowEasterEgg] = useState(false);
@@ -51,6 +52,14 @@ export default function Dashboard() {
         .order("created_at", { ascending: false });
 
       setWhoLikedMe(likeData || []);
+
+      const { data: followingData } = await supabase
+        .from("follows")
+        .select("following_id, created_at, profiles!follows_following_id_fkey(id, username, avatar_url, vibes(*))")
+        .eq("follower_id", user.id)
+        .order("created_at", { ascending: false });
+
+      setFollowingFeed(followingData || []);
 
       const { data: allProfiles, error: profilesError } = await supabase
         .from("profiles")
@@ -208,6 +217,52 @@ export default function Dashboard() {
                       @{liker.username}
                     </span>
                     <Heart size={12} className="text-red-500" fill="currentColor" />
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {followingFeed.length > 0 && (
+          <section className="mb-16">
+            <div className="mb-6">
+              <h2 className="text-2xl font-black uppercase tracking-tighter">Following</h2>
+              <p className="text-gray-500 text-sm mt-1">Crates from people you follow.</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {followingFeed.map((row) => {
+                const followed = row.profiles;
+                if (!followed) return null;
+                return (
+                  <Link
+                    key={row.following_id}
+                    to={`/u/${followed.username}`}
+                    className="flex items-center gap-4 bg-[#0a0a0a] border border-white/5 hover:border-blue-500/40 rounded-2xl p-4 transition-all group min-w-0"
+                  >
+                    <div className="w-12 h-12 flex-shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden flex items-center justify-center text-lg font-black">
+                      {followed.avatar_url ? (
+                        <img src={followed.avatar_url} className="w-full h-full object-cover" alt="" />
+                      ) : (
+                        followed.username?.[0]?.toUpperCase()
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold group-hover:text-blue-400 transition-colors truncate">
+                        @{followed.username}
+                      </p>
+                      <div className="grid grid-cols-4 gap-1 mt-2 w-full max-w-[140px]">
+                        {[0, 1, 2, 3].map((slot) => {
+                          const vibe = followed.vibes?.find((v) => v.slot_number === slot);
+                          return (
+                            <div key={slot} className="aspect-square rounded-sm overflow-hidden border border-white/10 bg-white/5">
+                              {vibe && <img src={vibe.album_cover} className="w-full h-full object-cover" alt="" />}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </Link>
                 );
               })}
