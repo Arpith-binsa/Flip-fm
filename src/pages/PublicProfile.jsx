@@ -112,13 +112,13 @@ export default function PublicProfile() {
   const theme = isSync ? syncColors : isFlipside ? flipsideColors : defaultColors;
 
   return (
-    <div className={`min-h-screen bg-black text-white p-6 flex flex-col items-center bg-gradient-to-br ${theme.bg}`}>
+    <div className={`min-h-screen bg-black text-white p-4 sm:p-6 flex flex-col items-center bg-gradient-to-br ${theme.bg}`}>
 
       {/* TOP NAV */}
-      <div className="w-full max-w-6xl mb-8">
+      <div className="w-full max-w-6xl mb-6 sm:mb-8">
         <Link
           to="/dashboard"
-          className="text-2xl font-black italic uppercase tracking-tighter hover:text-purple-400 transition-colors inline-block"
+          className="text-xl sm:text-2xl font-black italic uppercase tracking-tighter hover:text-purple-400 transition-colors inline-block"
         >
           FLIP-FM
         </Link>
@@ -137,7 +137,7 @@ export default function PublicProfile() {
           )}
         </div>
 
-        <h1 className="text-5xl font-black italic tracking-tighter uppercase">{profile.username}</h1>
+        <h1 className="text-3xl sm:text-5xl font-black italic tracking-tighter uppercase break-words px-2">{profile.username}</h1>
         <p className="text-gray-500 uppercase tracking-widest text-xs font-bold">{profile.bio}</p>
 
         {/* Like count (public) */}
