@@ -142,7 +142,7 @@ export default function PublicProfile() {
       </div>
 
       {/* HEADER WITH MATCH SCORE + LIKE */}
-      <div className="text-center mb-12 space-y-4">
+      <div className="text-center mb-12 space-y-4 w-full max-w-lg min-w-0">
         {/* Avatar */}
         <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden border-4 border-white/10 shadow-xl">
           {profile.avatar_url ? (
