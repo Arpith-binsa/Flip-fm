@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [syncMatches, setSyncMatches] = useState([]);
   const [flipsideMatches, setFlipsideMatches] = useState([]);
   const [whoLikedMe, setWhoLikedMe] = useState([]);
+  const [followingFeed, setFollowingFeed] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showLuckyModal, setShowLuckyModal] = useState(false);
   const [showEasterEgg, setShowEasterEgg] = useState(false);
@@ -51,6 +52,14 @@ export default function Dashboard() {
         .order("created_at", { ascending: false });
 
       setWhoLikedMe(likeData || []);
+
+      const { data: followingData } = await supabase
+        .from("follows")
+        .select("following_id, created_at, profiles!follows_following_id_fkey(id, username, avatar_url, vibes(*))")
+        .eq("follower_id", user.id)
+        .order("created_at", { ascending: false });
+
+      setFollowingFeed(followingData || []);
 
       const { data: allProfiles, error: profilesError } = await supabase
         .from("profiles")
@@ -140,31 +149,31 @@ export default function Dashboard() {
 
       {/* HEADER */}
       <header className="border-b border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-6 py-6 flex justify-between items-center">
-          <div className="flex items-center gap-8">
-            <Link to="/dashboard" className="text-2xl font-black italic uppercase tracking-tighter hover:text-purple-400 transition-colors">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-8 text-center sm:text-left">
+            <Link to="/dashboard" className="text-xl sm:text-2xl font-black italic uppercase tracking-tighter hover:text-purple-400 transition-colors">
               FLIP-FM
             </Link>
             <div>
-              <h1 className="text-4xl font-black italic uppercase tracking-tighter">
+              <h1 className="text-2xl sm:text-4xl font-black italic uppercase tracking-tighter">
                 Your Crate
               </h1>
-              <p className="text-gray-500 text-xs uppercase tracking-widest mt-1">
+              <p className="text-gray-500 text-[10px] sm:text-xs uppercase tracking-widest mt-1">
                 Welcome back, @{currentUser?.username}
               </p>
             </div>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-2 sm:gap-4 w-full sm:w-auto">
             <button
               onClick={() => setShowLuckyModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-full transition-all text-xs uppercase tracking-widest font-bold shadow-lg"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-full transition-all text-[10px] sm:text-xs uppercase tracking-widest font-bold shadow-lg whitespace-nowrap"
             >
               <Sparkles size={14} />
               Feeling Lucky
             </button>
             <button
               onClick={() => navigate("/my-profile")}
-              className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all text-xs uppercase tracking-widest font-bold"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all text-[10px] sm:text-xs uppercase tracking-widest font-bold whitespace-nowrap"
             >
               <Settings size={14} />
               Edit Crate
@@ -208,6 +217,52 @@ export default function Dashboard() {
                       @{liker.username}
                     </span>
                     <Heart size={12} className="text-red-500" fill="currentColor" />
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {followingFeed.length > 0 && (
+          <section className="mb-16">
+            <div className="mb-6">
+              <h2 className="text-2xl font-black uppercase tracking-tighter">Following</h2>
+              <p className="text-gray-500 text-sm mt-1">Crates from people you follow.</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {followingFeed.map((row) => {
+                const followed = row.profiles;
+                if (!followed) return null;
+                return (
+                  <Link
+                    key={row.following_id}
+                    to={`/u/${followed.username}`}
+                    className="flex items-center gap-4 bg-[#0a0a0a] border border-white/5 hover:border-blue-500/40 rounded-2xl p-4 transition-all group min-w-0"
+                  >
+                    <div className="w-12 h-12 flex-shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden flex items-center justify-center text-lg font-black">
+                      {followed.avatar_url ? (
+                        <img src={followed.avatar_url} className="w-full h-full object-cover" alt="" />
+                      ) : (
+                        followed.username?.[0]?.toUpperCase()
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold group-hover:text-blue-400 transition-colors truncate">
+                        @{followed.username}
+                      </p>
+                      <div className="grid grid-cols-4 gap-1 mt-2 w-full max-w-[140px]">
+                        {[0, 1, 2, 3].map((slot) => {
+                          const vibe = followed.vibes?.find((v) => v.slot_number === slot);
+                          return (
+                            <div key={slot} className="aspect-square rounded-sm overflow-hidden border border-white/10 bg-white/5">
+                              {vibe && <img src={vibe.album_cover} className="w-full h-full object-cover" alt="" />}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </Link>
                 );
               })}
@@ -308,22 +363,22 @@ export default function Dashboard() {
                 <Link
                   to={`/u/${user.username}`}
                   key={user.id}
-                  className="group flex items-center justify-between bg-[#0a0a0a] border border-white/5 p-6 rounded-2xl hover:bg-white/5 hover:border-green-500/30 transition-all"
+                  className="group flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 sm:gap-0 bg-[#0a0a0a] border border-white/5 p-4 sm:p-6 rounded-2xl hover:bg-white/5 hover:border-green-500/30 transition-all"
                 >
-                  <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-500 rounded-2xl flex items-center justify-center text-2xl font-black uppercase overflow-hidden">
+                  <div className="flex items-center gap-4 sm:gap-6 min-w-0">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0 bg-gradient-to-br from-green-500 to-blue-500 rounded-2xl flex items-center justify-center text-lg sm:text-2xl font-black uppercase overflow-hidden">
                       {user.avatar_url ? (
                         <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
                       ) : (
                         user.username?.[0]
                       )}
                     </div>
-                    <div>
-                      <h3 className="text-xl font-black tracking-tighter uppercase group-hover:text-green-400 transition-colors">
+                    <div className="min-w-0">
+                      <h3 className="text-lg sm:text-xl font-black tracking-tighter uppercase group-hover:text-green-400 transition-colors truncate">
                         @{user.username}
                       </h3>
                       <p className="text-sm text-gray-500 mt-1 line-clamp-1">{user.bio}</p>
-                      <div className="grid grid-cols-2 gap-1 mt-2 w-16 h-16">
+                      <div className="grid grid-cols-2 gap-1 mt-2 w-12 h-12 sm:w-16 sm:h-16">
                         {user.vibes?.slice(0, 4).map((v, i) => (
                           <div key={i} className="w-full h-full rounded-sm overflow-hidden border border-white/10">
                             <img src={v.album_cover} className="w-full h-full object-cover" alt="" />
@@ -332,10 +387,10 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-3">
-                    <div className="text-right">
+                  <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-3 pl-16 sm:pl-0">
+                    <div className="text-left sm:text-right">
                       <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Match</div>
-                      <div className="text-4xl font-black text-green-400">{user.matchScore}%</div>
+                      <div className="text-2xl sm:text-4xl font-black text-green-400">{user.matchScore}%</div>
                     </div>
                     <LikeButton likedUserId={user.id} likedUsername={user.username} />
                   </div>
@@ -368,22 +423,22 @@ export default function Dashboard() {
                 <Link
                   to={`/u/${user.username}`}
                   key={user.id}
-                  className="group flex items-center justify-between bg-[#0a0a0a] border border-white/5 p-6 rounded-2xl hover:bg-white/5 hover:border-orange-500/30 transition-all"
+                  className="group flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 sm:gap-0 bg-[#0a0a0a] border border-white/5 p-4 sm:p-6 rounded-2xl hover:bg-white/5 hover:border-orange-500/30 transition-all"
                 >
-                  <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-pink-500 rounded-2xl flex items-center justify-center text-2xl font-black uppercase overflow-hidden">
+                  <div className="flex items-center gap-4 sm:gap-6 min-w-0">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0 bg-gradient-to-br from-orange-500 to-pink-500 rounded-2xl flex items-center justify-center text-lg sm:text-2xl font-black uppercase overflow-hidden">
                       {user.avatar_url ? (
                         <img src={user.avatar_url} className="w-full h-full object-cover" alt="" />
                       ) : (
                         user.username?.[0]
                       )}
                     </div>
-                    <div>
-                      <h3 className="text-xl font-black tracking-tighter uppercase group-hover:text-orange-400 transition-colors">
+                    <div className="min-w-0">
+                      <h3 className="text-lg sm:text-xl font-black tracking-tighter uppercase group-hover:text-orange-400 transition-colors truncate">
                         @{user.username}
                       </h3>
                       <p className="text-sm text-gray-500 mt-1 line-clamp-1">{user.bio}</p>
-                      <div className="grid grid-cols-2 gap-1 mt-2 w-16 h-16">
+                      <div className="grid grid-cols-2 gap-1 mt-2 w-12 h-12 sm:w-16 sm:h-16">
                         {user.vibes?.slice(0, 4).map((v, i) => (
                           <div key={i} className="w-full h-full rounded-sm overflow-hidden border border-white/10">
                             <img src={v.album_cover} className="w-full h-full object-cover" alt="" />
@@ -392,10 +447,10 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-3">
-                    <div className="text-right">
+                  <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-3 pl-16 sm:pl-0">
+                    <div className="text-left sm:text-right">
                       <div className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Match</div>
-                      <div className="text-4xl font-black text-orange-400">{user.matchScore}%</div>
+                      <div className="text-2xl sm:text-4xl font-black text-orange-400">{user.matchScore}%</div>
                     </div>
                     <LikeButton likedUserId={user.id} likedUsername={user.username} />
                   </div>

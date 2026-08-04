@@ -34,6 +34,8 @@ export default function MyProfile() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteRequested, setDeleteRequested] = useState(false);
   const [deleteSending, setDeleteSending] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -63,6 +65,19 @@ export default function MyProfile() {
         .select("*")
         .eq("user_id", authUser.id);
       setMyVibes(data || []);
+
+      const { count: followers } = await supabase
+        .from("follows")
+        .select("*", { count: "exact", head: true })
+        .eq("following_id", authUser.id);
+
+      const { count: followingTotal } = await supabase
+        .from("follows")
+        .select("*", { count: "exact", head: true })
+        .eq("follower_id", authUser.id);
+
+      setFollowerCount(followers || 0);
+      setFollowingCount(followingTotal || 0);
     };
     checkAuth();
   }, [navigate]);
@@ -239,29 +254,29 @@ export default function MyProfile() {
       <div className="max-w-4xl mx-auto">
 
         {/* HEADER */}
-        <div className="flex justify-between items-center mb-12">
-          <div className="flex items-center gap-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0 mb-8 sm:mb-12">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-center sm:text-left">
             <Link
               to="/dashboard"
-              className="text-2xl font-black italic uppercase tracking-tighter hover:text-purple-400 transition-colors"
+              className="text-xl sm:text-2xl font-black italic uppercase tracking-tighter hover:text-purple-400 transition-colors"
             >
               FLIP-FM
             </Link>
             <div>
-              <h1 className="text-4xl font-black italic uppercase tracking-tighter">My Profile</h1>
-              <p className="text-gray-500 font-medium">Manage your identity and crate.</p>
+              <h1 className="text-2xl sm:text-4xl font-black italic uppercase tracking-tighter">My Profile</h1>
+              <p className="text-gray-500 font-medium text-sm sm:text-base">Manage your identity and crate.</p>
             </div>
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center w-full sm:w-auto">
             <button
               onClick={() => navigate('/dashboard')}
-              className="text-xs font-bold uppercase tracking-widest px-6 py-3 border border-white/10 rounded-full hover:bg-white/5 transition-all"
+              className="flex-1 sm:flex-none text-[10px] sm:text-xs font-bold uppercase tracking-widest px-4 sm:px-6 py-3 border border-white/10 rounded-full hover:bg-white/5 transition-all whitespace-nowrap"
             >
               Back to Dashboard
             </button>
             <button
               onClick={handleLogout}
-              className="text-xs font-bold uppercase tracking-widest px-4 py-3 text-gray-400 hover:text-red-400 border border-white/10 rounded-full hover:bg-white/5 transition-all"
+              className="flex-1 sm:flex-none text-[10px] sm:text-xs font-bold uppercase tracking-widest px-4 py-3 text-gray-400 hover:text-red-400 border border-white/10 rounded-full hover:bg-white/5 transition-all whitespace-nowrap"
             >
               Sign Out
             </button>
@@ -351,6 +366,10 @@ export default function MyProfile() {
                 {editMode && (
                   <p className="text-xs text-yellow-500 mt-1">⚠️ Changing username will affect your profile URL</p>
                 )}
+                <div className="flex gap-4 mt-2 text-xs text-gray-400 uppercase tracking-widest font-bold">
+                  <span>{followerCount} {followerCount === 1 ? "Follower" : "Followers"}</span>
+                  <span>{followingCount} Following</span>
+                </div>
               </div>
 
               {/* Bio */}
@@ -481,7 +500,7 @@ export default function MyProfile() {
           </button>
           <input
             autoFocus
-            className="bg-transparent border-b-2 border-white/10 text-4xl md:text-6xl font-black w-full max-w-3xl py-8 focus:outline-none focus:border-blue-500 placeholder:text-white/5 mt-20 text-center"
+            className="bg-transparent border-b-2 border-white/10 text-2xl sm:text-4xl md:text-6xl font-black w-full max-w-3xl py-4 sm:py-8 focus:outline-none focus:border-blue-500 placeholder:text-white/5 mt-12 sm:mt-20 text-center"
             placeholder="TYPE ALBUM NAME..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}

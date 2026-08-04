@@ -5,6 +5,7 @@ import { calculateVibeMatch } from "../vibeMath";
 import { FaSpotify } from "react-icons/fa";
 import GoogleColorIcon from "../components/GoogleColorIcon";
 import LikeButton from "../components/LikeButton";
+import FollowButton from "../components/FollowButton";
 
 export default function PublicProfile() {
   const { username } = useParams();
@@ -13,6 +14,8 @@ export default function PublicProfile() {
   const [myVibes, setMyVibes] = useState([]);
   const [matchScore, setMatchScore] = useState(null);
   const [likeCount, setLikeCount] = useState(0);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
   const profilePicRef = useRef(null);
 
   useEffect(() => {
@@ -41,6 +44,20 @@ export default function PublicProfile() {
           .eq("liked_id", profileData.id);
 
         setLikeCount(count || 0);
+
+        // Get follower/following counts (public)
+        const { count: followers } = await supabase
+          .from("follows")
+          .select("*", { count: "exact", head: true })
+          .eq("following_id", profileData.id);
+
+        const { count: followingTotal } = await supabase
+          .from("follows")
+          .select("*", { count: "exact", head: true })
+          .eq("follower_id", profileData.id);
+
+        setFollowerCount(followers || 0);
+        setFollowingCount(followingTotal || 0);
 
         // Get your vibes for match calculation
         const { data: { session } } = await supabase.auth.getSession();
@@ -112,20 +129,20 @@ export default function PublicProfile() {
   const theme = isSync ? syncColors : isFlipside ? flipsideColors : defaultColors;
 
   return (
-    <div className={`min-h-screen bg-black text-white p-6 flex flex-col items-center bg-gradient-to-br ${theme.bg}`}>
+    <div className={`min-h-screen bg-black text-white p-4 sm:p-6 flex flex-col items-center bg-gradient-to-br ${theme.bg}`}>
 
       {/* TOP NAV */}
-      <div className="w-full max-w-6xl mb-8">
+      <div className="w-full max-w-6xl mb-6 sm:mb-8">
         <Link
           to="/dashboard"
-          className="text-2xl font-black italic uppercase tracking-tighter hover:text-purple-400 transition-colors inline-block"
+          className="text-xl sm:text-2xl font-black italic uppercase tracking-tighter hover:text-purple-400 transition-colors inline-block"
         >
           FLIP-FM
         </Link>
       </div>
 
       {/* HEADER WITH MATCH SCORE + LIKE */}
-      <div className="text-center mb-12 space-y-4">
+      <div className="text-center mb-12 space-y-4 w-full max-w-lg min-w-0">
         {/* Avatar */}
         <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-purple-500 overflow-hidden border-4 border-white/10 shadow-xl">
           {profile.avatar_url ? (
@@ -137,7 +154,7 @@ export default function PublicProfile() {
           )}
         </div>
 
-        <h1 className="text-5xl font-black italic tracking-tighter uppercase">{profile.username}</h1>
+        <h1 className="text-3xl sm:text-5xl font-black italic tracking-tighter uppercase break-words px-2">{profile.username}</h1>
         <p className="text-gray-500 uppercase tracking-widest text-xs font-bold">{profile.bio}</p>
 
         {/* Like count (public) */}
@@ -146,6 +163,12 @@ export default function PublicProfile() {
             ❤️ {likeCount} {likeCount === 1 ? "like" : "likes"}
           </p>
         )}
+
+        {/* Follower / Following counts (public) */}
+        <div className="flex justify-center gap-4 text-xs text-gray-400 uppercase tracking-widest font-bold">
+          <span>{followerCount} {followerCount === 1 ? "Follower" : "Followers"}</span>
+          <span>{followingCount} Following</span>
+        </div>
 
         {/* Match badge */}
         {matchScore !== null && (
@@ -159,9 +182,13 @@ export default function PublicProfile() {
           </div>
         )}
 
-        {/* Like button */}
-        <div className="flex justify-center pt-2">
+        {/* Like + Follow buttons */}
+        <div className="flex justify-center items-center gap-3 pt-2 flex-wrap">
           <LikeButton likedUserId={profile.id} likedUsername={profile.username} />
+          <FollowButton
+            profileId={profile.id}
+            onFollowChange={(delta) => setFollowerCount((prev) => Math.max(0, prev + delta))}
+          />
         </div>
       </div>
 
